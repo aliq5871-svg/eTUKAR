@@ -345,6 +345,10 @@ gap:10px;">
        <div>
         <h1 style="color: #fff; font-size: 22px; font-weight: 800; line-height: 1.2; margin: 0;">Dashboard Pertukaran Murid</h1>
         <p style="color: rgba(255,255,255,0.85); font-size: 11px; font-weight: 500; margin: 2px 0 0 0;">Kementerian Pendidikan Malaysia</p>
+<p id="user-display"
+   style="color:#fff;font-size:12px;font-weight:600;opacity:0.9;margin-top:4px;">
+</p>
+
        </div>
       </div>
       <div class="search-box no-print" style="flex: 0 1 250px;">
@@ -523,6 +527,7 @@ style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; displ
   </div><!-- Toast -->
   <div id="toast" class="toast-msg" style="background: #059669; color: #fff;"></div>
   <script>
+
   const SCHOOLS = [
     { name: 'SMK Kota Marudu', capacity: 800, enrolled: 720, analysis: 'Hampir maksimum' },
     { name: 'SMK Tandek', capacity: 600, enrolled: 530, analysis: 'Tinggi' },
@@ -546,6 +551,7 @@ let isLoadingSheet = false;
   let charts = { donut: null, monthly: null, category: null };
   let currentEditingId = null;
 let currentRole = null;
+const ADMIN_USERNAME = "adminppd";
 const ADMIN_PASSWORD = "ppdkm2026";
 
 function isAdmin() {
@@ -751,34 +757,60 @@ if (loginModal) loginModal.classList.remove('show');
 
     applyRolePermissions();
   }
-} function loginSystem() {
+}function loginSystem() {
 
-  const role = getEl('login-role').value;
-  const pass = getEl('admin-password').value;
+  const role = getEl('login-role')?.value;
+  const username = getEl('login-username')?.value.trim() || "";
+  const password = getEl('admin-password')?.value || "";
 
   if (!role) {
-    showToast('⚠️ Pilih peranan dahulu', '#dc2626');
+    showToast("⚠️ Pilih peranan dahulu", "#dc2626");
     return;
   }
 
-  // 🔐 CHECK PASSWORD ADMIN
+  // =========================
+  // ADMIN LOGIN (PPD)
+  // =========================
   if (role === "PPD") {
-    if (pass !== ADMIN_PASSWORD) {
-      showToast("❌ Password admin salah", "#dc2626");
+
+    if (
+      username !== ADMIN_USERNAME ||
+      password !== ADMIN_PASSWORD
+    ) {
+      showToast("❌ Username / password salah", "#dc2626");
       return;
     }
   }
 
-  currentRole = role;
-  localStorage.setItem('role', currentRole);
+  // =========================
+  // USER LOGIN
+  // =========================
+  if (role === "Pengguna") {
+    if (username === "") {
+      showToast("⚠️ Masukkan nama pengguna", "#dc2626");
+      return;
+    }
+  }
 
-  const modal = getEl('login-modal');
-  if (modal) modal.classList.remove('show');
+  // =========================
+  // SAVE SESSION
+  // =========================
+  currentRole = role;
+
+  localStorage.setItem("role", role);
+  localStorage.setItem("username", username);
+
+  // ⭐ PAPAR USER DI HEADER
+  setText("user-display", "👤 " + username);
+
+  // tutup modal
+  getEl("login-modal")?.classList.remove("show");
 
   applyRolePermissions();
 
-  showToast('✅ Login berjaya', '#059669');
+  showToast("✅ Login berjaya", "#059669");
 }
+
 
 
 /* =========================
@@ -1749,28 +1781,40 @@ function getAlternativeSchools(currentSchool) {
 <!-- LOGIN MODAL -->
 <div id="login-modal" class="modal-overlay show">
   <div class="modal-content" style="max-width:400px;">
+
     <h2 style="font-size:20px;font-weight:800;margin-bottom:20px;">
       🔐 Login Dashboard
     </h2>
 
+    <!-- USERNAME -->
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text"
+             id="login-username"
+             placeholder="Masukkan username">
+    </div>
+
+    <!-- ROLE -->
     <div class="form-group">
       <label>Pilih Peranan</label>
       <select id="login-role">
-<div class="form-group">
-  <label>Password Admin (PPD)</label>
-  <input type="password"
-         id="admin-password"
-         placeholder="Masukkan password admin">
-</div>
-
         <option value="PPD">🧑‍💼 PPD (Admin)</option>
         <option value="Pengguna">👤 Pengguna</option>
       </select>
     </div>
 
+    <!-- PASSWORD -->
+    <div class="form-group">
+      <label>Password Admin (PPD)</label>
+      <input type="password"
+             id="admin-password"
+             placeholder="Masukkan password admin">
+    </div>
+
     <button class="btn-primary" onclick="loginSystem()">
       Masuk Dashboard
     </button>
+
   </div>
 </div>
 

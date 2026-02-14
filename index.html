@@ -1,0 +1,1758 @@
+<!doctype html>
+<html lang="ms" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Enterprise 📚 PPD Kota Marudu</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2pdf@0.10.1/dist/html2pdf.bundle.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+
+  <style>
+    * { font-family: 'Plus Jakarta Sans', sans-serif; }
+    html, body { height: 100%; margin: 0; }
+.heat-card {
+  transition: all 0.35s ease;
+  border: 2px solid transparent;
+}
+
+.heat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes pulse-light { 0%, 100% { box-shadow: 0 4px 20px rgba(11, 42, 91, 0.08); } 50% { box-shadow: 0 8px 32px rgba(11, 42, 91, 0.12); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .anim-fade-up { animation: fadeUp 0.6s ease-out both; }
+    .anim-slide-right { animation: slideInRight 0.6s ease-out both; }
+    .shadow-pulse { animation: pulse-light 2s ease-in-out infinite; }
+
+    body.dark-mode { background: #0f1419 !important; color: #e2e8f0; }
+    body.dark-mode #app-wrapper { background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #1a2535 100%) !important; }
+    body.dark-mode .card-base { background: #1a1f2e; border-color: #2d3748; }
+
+    .card-base {
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid #e8edf5;
+      background: #fff;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 16px rgba(11, 42, 91, 0.08);
+    }
+    .card-base:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(11, 42, 91, 0.12); }
+
+    .stat-kpi {
+      background: linear-gradient(135deg, #0b2a5b, #1e4fa3);
+      color: #fff;
+      padding: 20px;
+      border-radius: 14px;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-kpi::before { content: ''; position: absolute; top: -50%; right: -50%; width: 200px; height: 200px; border-radius: 50%; background: rgba(255, 255, 255, 0.05); }
+    .stat-kpi:hover { transform: translateY(-4px); }
+
+    .critical-alert {
+      background: #fef2f2;
+      border: 2px solid #dc2626;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      animation: slideDown 0.4s ease-out;
+    }
+
+    .critical-alert p { color: #dc2626; margin: 0; font-weight: 600; font-size: 13px; }
+
+    .grid-3col { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+
+    .rank-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .rank-table thead { background: linear-gradient(135deg, #0b2a5b, #1e4fa3); color: #fff; }
+    .rank-table th { padding: 12px; font-weight: 700; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .rank-table td { padding: 12px; border-bottom: 1px solid #e8edf5; }
+    .rank-table tr:hover { background: rgba(11, 42, 91, 0.04); }
+
+    .search-box {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px 14px 10px 38px;
+      border-radius: 10px;
+      border: 1.5px solid #cbd5e1;
+      font-size: 13px;
+    }
+
+    .search-box svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+    }
+
+    .search-results {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1px solid #e8edf5;
+      border-radius: 10px;
+      margin-top: 6px;
+      max-height: 300px;
+      overflow-y: auto;
+      z-index: 30;
+      box-shadow: 0 8px 24px rgba(11, 42, 91, 0.1);
+      display: none;
+    }
+
+    .search-results.show { display: block; }
+
+    .search-result-item {
+      padding: 10px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background 0.2s;
+    }
+
+    .search-result-item:hover { background: #f8fafc; }
+
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(11, 42, 91, 0.5);
+      backdrop-filter: blur(6px);
+      z-index: 50;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .modal-overlay.show { opacity: 1; pointer-events: all; }
+
+    .modal-content {
+      border-radius: 20px; padding: 32px;
+      max-width: 600px; width: 90%;
+      background: #fff;
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+      max-height: 90%;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(11, 42, 91, 0.15);
+    }
+    .modal-overlay.show .modal-content { transform: scale(1); }
+
+    .toast-msg {
+      position: fixed; bottom: 24px; right: 24px;
+      padding: 14px 24px; border-radius: 12px;
+      font-weight: 600; font-size: 14px; z-index: 60;
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.4s ease;
+      box-shadow: 0 8px 24px rgba(11, 42, 91, 0.15);
+    }
+    .toast-msg.show { transform: translateY(0); opacity: 1; }
+
+    .tab-btn {
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.25s ease;
+      cursor: pointer;
+      border: none;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin-bottom: 16px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      font-size: 12px;
+      margin-bottom: 6px;
+      color: #0b2a5b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1.5px solid #cbd5e1;
+      font-size: 13px;
+      font-family: inherit;
+    }
+
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline: none;
+      border-color: #1e4fa3;
+      box-shadow: 0 0 0 3px rgba(30, 79, 163, 0.1);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+      justify-content: flex-end;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #0b2a5b, #1e4fa3);
+      color: #fff;
+      padding: 10px 24px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(11, 42, 91, 0.2); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .btn-secondary {
+      background: #f1f5f9;
+      color: #0b2a5b;
+      padding: 10px 24px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover { background: #e2e8f0; }
+
+    .edit-btn {
+      background: #1e4fa3;
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .edit-btn:hover { background: #0b2a5b; }
+
+    .capacity-card {
+      padding: 16px;
+      border-radius: 12px;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      transition: all 0.3s ease;
+    }
+
+    .capacity-card:hover { background: #f1f5f9; transform: translateY(-2px); }
+
+    .capacity-bar {
+      width: 100%;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 8px 0;
+    }
+
+    .capacity-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: all 0.4s ease;
+    }
+
+    @media print {
+      .no-print { display: none !important; }
+      body { background: #fff; }
+      #app-wrapper { background: #fff !important; }
+      main { max-width: 100%; padding: 20px !important; }
+      .card-base { box-shadow: none; border: 1px solid #cbd5e1; page-break-inside: avoid; }
+    }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+ </head>
+ <body class="h-full" style="background: #f4f7fb;">
+
+<!-- ⭐ QUICK ACTIONS (BETUL DI SINI) -->
+<div id="quick-actions" class="no-print"
+style="
+position: fixed;
+bottom: 24px;
+right: 24px;
+z-index: 45;
+display:flex;
+flex-direction:column;
+gap:10px;">
+
+  <button onclick="openAddModal()" class="btn-primary">➕</button>
+  <button onclick="exportExcel()" class="btn-primary">📊</button>
+  <button onclick="exportPDFKPM()" class="btn-primary">📄</button>
+
+</div>
+
+<!-- APP WRAPPER -->
+  <div id="app-wrapper" class="h-full w-full" style="background: linear-gradient(135deg, #f4f7fb 0%, #e9f0f8 50%, #e0ecf5 100%); overflow-y: auto; overflow-x: hidden;"><!-- Dark Mode Toggle --> <button id="dark-mode-toggle" class="no-print" onclick="toggleDarkMode()" style="position: fixed; bottom: 24px; left: 24px; z-index: 45; width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #0b2a5b, #1e4fa3); color: #fff; border: none; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(11, 42, 91, 0.15); transition: all 0.3s ease;" title="Dark Mode">🌙</button> <!-- Header -->
+   <header class="no-print shadow-pulse" style="background: linear-gradient(135deg, #0b2a5b 0%, #1e4fa3 60%, #2d5fa8 100%); padding: 24px 32px; position: sticky; top: 0; z-index: 40; border-bottom: 1px solid rgba(255,255,255,0.1);">
+    <div style="max-width: 1600px; margin: 0 auto;">
+     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 16px;">
+      <div style="display: flex; align-items: center; gap: 16px; flex: 1; min-width: 200px;">
+      <div style="
+  width:56px;
+  height:56px;
+  border-radius:14px;
+  background:rgba(255,255,255,0.18);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  box-shadow:0 4px 12px rgba(0,0,0,0.15);
+">
+  <img src="https://i.imgur.com/4EGUuTx.png"
+       style="
+         width:46px;
+         height:46px;
+         object-fit:contain;
+         image-rendering:auto;
+       ">
+</div>
+
+
+       <div>
+        <h1 style="color: #fff; font-size: 22px; font-weight: 800; line-height: 1.2; margin: 0;">Dashboard Pertukaran Murid</h1>
+        <p style="color: rgba(255,255,255,0.85); font-size: 11px; font-weight: 500; margin: 2px 0 0 0;">Kementerian Pendidikan Malaysia</p>
+       </div>
+      </div>
+      <div class="search-box no-print" style="flex: 0 1 250px;">
+       <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35" />
+       </svg><input id="search-input" type="text" placeholder="Cari nama pelajar..." onkeyup="handleSearch()">
+       <div id="search-results" class="search-results"></div>
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;"><button class="tab-btn" 
+style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; display: flex; align-items: center; gap: 6px; font-weight: 700;" onclick="openAddModal()">
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+         <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg> Tambah </button> <button class="tab-btn" style="background: rgba(255,255,255,0.18); color: #fff; display: flex; align-items: center; gap: 6px;" onclick="exportExcel()">
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+         <path d="M12 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V12" />
+        </svg> Excel </button> <button class="tab-btn" style="background: rgba(255,255,255,0.18); color: #fff; display: flex; align-items: center; gap: 6px;" onclick="exportPDFKPM()">
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        </svg> PDF KPM </button>
+      </div>
+     </div>
+    </div>
+   </header>
+   <main style="max-width: 1600px; margin: 0 auto; padding: 24px 20px 40px;"><!-- Critical Alerts -->
+    <div id="critical-alerts" style="margin-bottom: 24px;"></div><!-- Tabs -->
+    <nav class="no-print anim-fade-up" style="display: flex; gap: 6px; margin-bottom: 24px; background: #fff; border-radius: 14px; padding: 6px; border: 1px solid #e8edf5; box-shadow: 0 4px 16px rgba(11, 42, 91, 0.08);"><button class="tab-btn active" data-tab="dashboard" onclick="switchTab('dashboard')" style="background: linear-gradient(135deg, #0b2a5b, #1e4fa3); flex: 1; color: #fff;">📊 Dashboard</button> <button class="tab-btn" data-tab="senarai" onclick="switchTab('senarai')" style="flex: 1;">📋 Senarai</button> <button class="tab-btn" data-tab="ranking" onclick="switchTab('ranking')" style="flex: 1;">🏆 Ranking</button> <button class="tab-btn" data-tab="capacity" onclick="switchTab('capacity')" style="flex: 1;">🏢 Kepadatan</button>
+    </nav><!-- DASHBOARD TAB -->
+    <section id="tab-dashboard" role="tabpanel">
+     <div class="grid-3col anim-fade-up" style="animation-delay: 0.05s; margin-bottom: 24px;">
+
+  <!-- JUMLAH -->
+  <div class="stat-kpi">
+    <p style="opacity:.9;font-size:12px;margin:0 0 6px 0;font-weight:600;">
+      JUMLAH PERMOHONAN
+    </p>
+    <p id="kpi-total" style="font-size:32px;font-weight:800;margin:0;">0</p>
+  </div>
+
+  <!-- DILULUSKAN -->
+  <div class="stat-kpi" style="background:linear-gradient(135deg,#059669,#10b981);">
+    <p style="opacity:.9;font-size:12px;margin:0 0 6px 0;font-weight:600;">
+      DILULUSKAN
+    </p>
+    <p id="kpi-approved" style="font-size:32px;font-weight:800;margin:0;">0</p>
+  </div>
+
+  <!-- DALAM PROSES -->
+  <div class="stat-kpi" style="background:linear-gradient(135deg,#d97706,#f59e0b);">
+    <p style="opacity:.9;font-size:12px;margin:0 0 6px 0;font-weight:600;">
+      DALAM PROSES
+    </p>
+    <p id="kpi-pending" style="font-size:32px;font-weight:800;margin:0;">0</p>
+  </div>
+
+  <!-- DITOLAK (BARU) -->
+  <div class="stat-kpi" style="background:linear-gradient(135deg,#dc2626,#ef4444);">
+    <p style="opacity:.9;font-size:12px;margin:0 0 6px 0;font-weight:600;">
+      DITOLAK
+    </p>
+    <p id="kpi-rejected" style="font-size:32px;font-weight:800;margin:0;">0</p>
+  </div>
+
+</div>
+
+     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+      <div class="card-base anim-fade-up" style="animation-delay: 0.1s;">
+       <h3 style="font-size: 14px; font-weight: 700; color: #0b2a5b; margin: 0 0 16px 0;">📊 Distribusi Status</h3>
+       <div class="chart-container">
+        <canvas id="donut-chart"></canvas>
+       </div>
+      </div>
+      <div class="card-base anim-slide-right" style="animation-delay: 0.1s;">
+       <h3 style="font-size: 14px; font-weight: 700; color: #0b2a5b; margin: 0 0 16px 0;">📈 Permohonan Bulanan</h3>
+       <div class="chart-container">
+        <canvas id="monthly-chart"></canvas>
+       </div>
+      </div>
+     </div>
+     <div class="card-base anim-fade-up" style="animation-delay: 0.12s;">
+      <h3 style="font-size: 14px; font-weight: 700; color: #0b2a5b; margin: 0 0 16px 0;">🔄 Perbandingan Kategori Pertukaran</h3>
+      <div class="chart-container">
+       <canvas id="category-chart"></canvas>
+      </div>
+     </div>
+     <div class="card-base anim-fade-up" style="animation-delay: 0.15s;">
+      <h3 style="font-size: 14px; font-weight: 700; color: #0b2a5b; margin: 0 0 16px 0;">🧠 AI Insight</h3>
+      <div id="ai-insights" style="display: grid; gap: 12px;"></div>
+     </div>
+    </section><!-- SENARAI TAB -->
+    <section id="tab-senarai" style="display: none;" role="tabpanel">
+     <div class="card-base anim-fade-up">
+      <div style="margin-bottom: 16px;">
+       <h2 style="font-size: 16px; font-weight: 700; color: #0b2a5b; margin: 0 0 12px 0;">📋 Senarai Permohonan</h2><select id="list-filter-status" onchange="renderList()" class="filter-select" style="padding: 8px 14px; border-radius: 10px; border: 1.5px solid #cbd5e1; font-size: 13px;"> <option value="all">Semua Status</option> <option value="Dalam Proses">Dalam Proses</option> <option value="Diluluskan">Diluluskan</option> <option value="Ditolak">Ditolak</option> </select>
+      </div>
+      <div id="list-container" style="overflow-x: auto;"></div>
+      <div id="list-empty" style="text-align: center; padding: 50px 20px; display: none;">
+       <p style="font-size: 40px; margin-bottom: 10px;">📋</p>
+       <p style="font-size: 14px; color: #94a3b8;">Tiada Permohonan</p>
+      </div>
+     </div>
+    </section><!-- RANKING TAB -->
+    <section id="tab-ranking" style="display: none;" role="tabpanel">
+     <div class="card-base anim-fade-up">
+      <h2 style="font-size: 16px; font-weight: 700; color: #0b2a5b; margin: 0 0 16px 0;">🏆 Ranking Pertukaran</h2>
+      <div id="ranking-container" style="min-height: 300px;"></div>
+     </div>
+    </section><!-- CAPACITY TAB -->
+    <section id="tab-capacity" style="display: none;" role="tabpanel">
+     <div class="card-base anim-fade-up">
+      <h2 style="font-size: 16px; font-weight: 700; color: #0b2a5b; margin: 0 0 20px 0;">🏢 Analisis Kepadatan Sekolah</h2>
+      <div id="capacity-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; min-height: 400px;"></div>
+     </div>
+    </section>
+   </main>
+   <footer class="no-print" style="text-align: center; padding: 20px; color: #94a3b8; font-size: 12px; border-top: 1px solid #e8edf5; margin-top: 40px;">
+    © 2024 Kementerian Pendidikan Malaysia — Dashboard Enterprise Pertukaran Murid
+   </footer>
+  </div><!-- Add Modal -->
+  <div id="add-modal" class="modal-overlay" onclick="closeAddModal(event)">
+   <div class="modal-content" onclick="event.stopPropagation()">
+    <h2 style="font-size: 20px; font-weight: 800; color: #0b2a5b; margin: 0 0 24px 0;">➕ Tambah Permohonan Baru</h2>
+    <form id="add-form" onsubmit="handleAddSubmit(event)">
+     <div class="form-group"><label for="student_name">Nama Pelajar *</label> <input type="text" id="student_name" name="student_name" required placeholder="Masukkan nama pelajar">
+     </div>
+     <div class="form-group"><label for="school_from">Sekolah Asal *</label> <select id="school_from" name="school_from" required onchange="toggleCustomSchoolFrom()"> <option value="">-- Pilih Sekolah --</option> <option value="SMK Kota Marudu">SMK Kota Marudu</option> <option value="SMK Tandek">SMK Tandek</option> <option value="SMK Tandek 2">SMK Tandek 2</option> <option value="SMK Langkon">SMK Langkon</option> <option value="SMK Bengkongan">SMK Bengkongan</option> <option value="SMK Salaping">SMK Salaping</option> <option value="SMK Bandau">SMK Bandau</option> <option value="K9 Mangandai">K9 Mangandai</option> <option value="Sekolah Lain">Sekolah Lain</option> </select>
+     </div>
+     <div id="custom_school_from_group" class="form-group" style="display: none;"><label for="custom_school_from">Nama Sekolah Asal *</label> <input type="text" id="custom_school_from" name="custom_school_from" placeholder="Masukkan nama sekolah">
+     </div>
+     <div class="form-group"><label for="school_to">Sekolah Baharu *</label> <select id="school_to" name="school_to" required onchange="toggleCustomSchoolTo()"> <option value="">-- Pilih Sekolah --</option> <option value="SMK Kota Marudu">SMK Kota Marudu</option> <option value="SMK Tandek">SMK Tandek</option> <option value="SMK Tandek 2">SMK Tandek 2</option> <option value="SMK Langkon">SMK Langkon</option> <option value="SMK Bengkongan">SMK Bengkongan</option> <option value="SMK Salaping">SMK Salaping</option> <option value="SMK Bandau">SMK Bandau</option> <option value="K9 Mangandai">K9 Mangandai</option> <option value="Sekolah Lain">Sekolah Lain</option> </select>
+     </div>
+     <div id="custom_school_to_group" class="form-group" style="display: none;"><label for="custom_school_to">Nama Sekolah Baharu *</label> <input type="text" id="custom_school_to" name="custom_school_to" placeholder="Masukkan nama sekolah">
+     </div>
+     <div class="form-group"><label for="grade">Tingkatan *</label> <select id="grade" name="grade" required> <option value="">-- Pilih Tingkatan --</option> <option value="Tingkatan 1">Tingkatan 1</option> <option value="Tingkatan 2">Tingkatan 2</option> <option value="Tingkatan 3">Tingkatan 3</option> <option value="Tingkatan 4">Tingkatan 4</option> <option value="Tingkatan 5">Tingkatan 5</option> <option value="Tingkatan 6">Tingkatan 6</option> </select>
+     </div>
+     <div class="form-group"><label for="transfer_category">Kategori Pertukaran *</label> <select id="transfer_category" name="transfer_category" required> <option value="">-- Pilih Kategori --</option> <option value="Dalam Daerah">Dalam Daerah</option> <option value="Antara Daerah">Antara Daerah</option> <option value="Antara Negeri">Antara Negeri</option> <option value="Rayuan Khas">Rayuan Khas</option> <option value="Aliran/Program">Aliran/Program</option> <option value="Belajar Semula/Cicir">Belajar Semula/Cicir</option> <option value="Sekolah Swasta">Sekolah Swasta</option> <option value="Murid Bukan Warganegara">Murid Bukan Warganegara</option> <option value="Murid Warganegara Tanpa Dokumen">Murid Warganegara Tanpa Dokumen</option> </select>
+     </div>
+     <div class="form-group"><label for="status">Status *</label> <select id="status" name="status" required> <option value="">-- Pilih Status --</option> <option value="Dalam Proses">Dalam Proses</option> <option value="Diluluskan">Diluluskan</option> <option value="Ditolak">Ditolak</option> </select>
+     </div>
+     <div class="form-group"><label for="date_applied">Tarikh Permohonan *</label> <input type="date" id="date_applied" name="date_applied" required>
+     </div>
+     <div class="form-group"><label for="notes">Catatan</label> <textarea id="notes" name="notes" placeholder="Masukkan catatan tambahan..."></textarea>
+     </div>
+     <div class="modal-actions"><button type="button" class="btn-secondary" onclick="closeAddModal()">Batal</button> <button type="submit" class="btn-primary">💾 Simpan Permohonan</button>
+     </div>
+    </form>
+   </div>
+  </div><!-- Edit Modal -->
+  <div id="edit-modal" class="modal-overlay" onclick="closeEditModal(event)">
+   <div class="modal-content" onclick="event.stopPropagation()">
+    <h2 style="font-size: 20px; font-weight: 800; color: #0b2a5b; margin: 0 0 24px 0;">✏️ Edit Permohonan</h2>
+    <form id="edit-form" onsubmit="handleEditSubmit(event)">
+     <div class="form-group"><label for="edit_student_name">Nama Pelajar *</label> <input type="text" id="edit_student_name" name="student_name" required placeholder="Masukkan nama pelajar">
+     </div>
+     <div class="form-group"><label for="edit_school_from">Sekolah Asal *</label> <select id="edit_school_from" name="school_from" required onchange="toggleCustomSchoolFromEdit()"> <option value="">-- Pilih Sekolah --</option> <option value="SMK Kota Marudu">SMK Kota Marudu</option> <option value="SMK Tandek">SMK Tandek</option> <option value="SMK Tandek 2">SMK Tandek 2</option> <option value="SMK Langkon">SMK Langkon</option> <option value="SMK Bengkongan">SMK Bengkongan</option> <option value="SMK Salaping">SMK Salaping</option> <option value="SMK Bandau">SMK Bandau</option> <option value="K9 Mangandai">K9 Mangandai</option> <option value="Sekolah Lain">Sekolah Lain</option> </select>
+     </div>
+     <div id="edit_custom_school_from_group" class="form-group" style="display: none;"><label for="edit_custom_school_from">Nama Sekolah Asal *</label> <input type="text" id="edit_custom_school_from" name="custom_school_from" placeholder="Masukkan nama sekolah">
+     </div>
+     <div class="form-group"><label for="edit_school_to">Sekolah Baharu *</label> <select id="edit_school_to" name="school_to" required onchange="toggleCustomSchoolToEdit()"> <option value="">-- Pilih Sekolah --</option> <option value="SMK Kota Marudu">SMK Kota Marudu</option> <option value="SMK Tandek">SMK Tandek</option> <option value="SMK Tandek 2">SMK Tandek 2</option> <option value="SMK Langkon">SMK Langkon</option> <option value="SMK Bengkongan">SMK Bengkongan</option> <option value="SMK Salaping">SMK Salaping</option> <option value="SMK Bandau">SMK Bandau</option> <option value="K9 Mangandai">K9 Mangandai</option> <option value="Sekolah Lain">Sekolah Lain</option> </select>
+     </div>
+     <div id="edit_custom_school_to_group" class="form-group" style="display: none;"><label for="edit_custom_school_to">Nama Sekolah Baharu *</label> <input type="text" id="edit_custom_school_to" name="custom_school_to" placeholder="Masukkan nama sekolah">
+     </div>
+     <div class="form-group"><label for="edit_grade">Tingkatan *</label> <select id="edit_grade" name="grade" required> <option value="">-- Pilih Tingkatan --</option> <option value="Tingkatan 1">Tingkatan 1</option> <option value="Tingkatan 2">Tingkatan 2</option> <option value="Tingkatan 3">Tingkatan 3</option> <option value="Tingkatan 4">Tingkatan 4</option> <option value="Tingkatan 5">Tingkatan 5</option> <option value="Tingkatan 6">Tingkatan 6</option> </select>
+     </div>
+     <div class="form-group"><label for="edit_transfer_category">Kategori Pertukaran *</label> <select id="edit_transfer_category" name="transfer_category" required> <option value="">-- Pilih Kategori --</option> <option value="Dalam Daerah">Dalam Daerah</option> <option value="Antara Daerah">Antara Daerah</option> <option value="Antara Negeri">Antara Negeri</option> <option value="Rayuan Khas">Rayuan Khas</option> <option value="Aliran/Program">Aliran/Program</option> <option value="Belajar Semula/Cicir">Belajar Semula/Cicir</option> <option value="Sekolah Swasta">Sekolah Swasta</option> <option value="Murid Bukan Warganegara">Murid Bukan Warganegara</option> <option value="Murid Warganegara Tanpa Dokumen">Murid Warganegara Tanpa Dokumen</option> </select>
+     </div>
+     <div class="form-group"><label for="edit_status">Status *</label> <select id="edit_status" name="status" required> <option value="">-- Pilih Status --</option> <option value="Dalam Proses">Dalam Proses</option> <option value="Diluluskan">Diluluskan</option> <option value="Ditolak">Ditolak</option> </select>
+     </div>
+     <div class="form-group"><label for="edit_date_applied">Tarikh Permohonan *</label> <input type="date" id="edit_date_applied" name="date_applied" required>
+     </div>
+     <div class="form-group"><label for="edit_notes">Catatan</label> <textarea id="edit_notes" name="notes" placeholder="Masukkan catatan tambahan..."></textarea>
+     </div>
+     <div class="modal-actions"><button type="button" class="btn-secondary" onclick="closeEditModal()" style="flex: 1;">Batal</button> <button type="button" class="btn-secondary" onclick="deleteRecord()" style="flex: 1; background: #fecaca; color: #dc2626;">🗑️ Padam</button> <button type="submit" class="btn-primary" style="flex: 1;">💾 Simpan</button>
+     </div>
+    </form>
+   </div>
+  </div><!-- Toast -->
+  <div id="toast" class="toast-msg" style="background: #059669; color: #fff;"></div>
+  <script>
+  const SCHOOLS = [
+    { name: 'SMK Kota Marudu', capacity: 800, enrolled: 720, analysis: 'Hampir maksimum' },
+    { name: 'SMK Tandek', capacity: 600, enrolled: 530, analysis: 'Tinggi' },
+    { name: 'SMK Tandek 2', capacity: 550, enrolled: 481, analysis: 'Tinggi' },
+    { name: 'SMK Langkon', capacity: 550, enrolled: 480, analysis: 'Tinggi' },
+    { name: 'SMK Bengkongan', capacity: 700, enrolled: 620, analysis: 'Tinggi' },
+    { name: 'SMK Salaping', capacity: 650, enrolled: 580, analysis: 'Tinggi' },
+    { name: 'SMK Bandau', capacity: 600, enrolled: 510, analysis: 'Sederhana' },
+    { name: 'K9 Mangandai', capacity: 500, enrolled: 420, analysis: 'Sederhana' },
+  ];
+
+  const MONTHS = ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Dis'];
+const URL =
+"https://script.google.com/macros/s/AKfycby69sJGDkUODlGlcKhHUbDkIti05-BuwIxRjFtsp-4MH-XJjbAk_--UUY4RJM9SelKJ/exec";
+
+
+  let allRecords = [];
+let isLoadingSheet = false;
+
+ 
+  let charts = { donut: null, monthly: null, category: null };
+  let currentEditingId = null;
+let currentRole = null;
+function isAdmin() {
+  return currentRole === "PPD";
+}
+
+// ===== ROLE PERMISSIONS =====
+function applyRolePermissions() {
+
+  const rankingTabBtn = document.querySelector('[data-tab="ranking"]');
+  const capacityTabBtn = document.querySelector('[data-tab="capacity"]');
+  const qa = getEl('quick-actions');
+
+  // =========================
+  // RESET DEFAULT (PPD MODE)
+  // =========================
+  if (qa) qa.style.display = "flex";
+
+  if (rankingTabBtn) rankingTabBtn.style.display = "";
+  if (capacityTabBtn) capacityTabBtn.style.display = "";
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.style.display = "";
+  });
+
+  // =========================
+  // ROLE: PENGGUNA
+  // =========================
+  if (currentRole === "Pengguna") {
+
+    // hide floating actions
+    if (qa) qa.style.display = "none";
+
+    // hide tab buttons
+    if (rankingTabBtn) rankingTabBtn.style.display = "none";
+    if (capacityTabBtn) capacityTabBtn.style.display = "none";
+
+    // hide header buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      const txt = btn.textContent;
+
+      if (
+        txt.includes("Excel") ||
+        txt.includes("PDF") ||
+        txt.includes("Tambah")
+      ) {
+        btn.style.display = "none";
+      }
+    });
+
+    // ⭐ IMPORTANT:
+    // kalau user sedang buka tab yang disembunyikan
+    // paksa balik ke dashboard
+    switchTab("dashboard");
+  }
+}
+
+function updateKPIs() {
+  const total = allRecords.length;
+  const approved = allRecords.filter(r => r.status === 'Diluluskan').length;
+  const pending = allRecords.filter(r => r.status === 'Dalam Proses').length;
+  const rejected = allRecords.filter(r => r.status === 'Ditolak').length;
+
+  setText('kpi-total', total);
+  setText('kpi-approved', approved);
+  setText('kpi-pending', pending);
+  setText('kpi-rejected', rejected); // ⭐ WAJIB
+}
+async function loadFromGoogleSheet() {
+
+  if (isLoadingSheet) return;
+  isLoadingSheet = true;
+
+  try {
+
+    // ⭐ bypass cache & CORS
+    const res = await fetch(URL + "?t=" + Date.now());
+
+    if (!res.ok) throw new Error("HTTP " + res.status);
+
+    const text = await res.text();
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      console.error("Response:", text);
+      throw new Error("Response bukan JSON");
+    }
+
+    const rows = Array.isArray(data)
+      ? data
+      : (Array.isArray(data.data) ? data.data : []);
+
+    allRecords = rows.map((r,i)=>({
+      ...r,
+      __backendId: String(r.id ?? i)
+    }));
+
+    updateAllCharts();
+
+    const live = getEl('live-status');
+    if (live) live.textContent = '● LIVE';
+
+  } catch(err) {
+
+    console.error("LOAD ERROR:", err);
+
+    const live = getEl('live-status');
+    if (live) live.textContent = '● OFFLINE';
+
+    showToast('❌ Gagal load data: ' + err.message, '#dc2626');
+
+  } finally {
+    isLoadingSheet = false;
+  }
+}
+
+
+  function getEl(id) { return document.getElementById(id); }
+  function setText(id, text) { const el = getEl(id); if (el) el.textContent = text; }
+  function setHTML(id, html) { const el = getEl(id); if (el) el.innerHTML = html; }
+
+  function toggleCustomSchoolFrom() {
+    const val = getEl('school_from').value;
+    const customGroup = getEl('custom_school_from_group');
+    const customInput = getEl('custom_school_from');
+    if (val === 'Sekolah Lain') {
+      customGroup.style.display = 'block';
+      customInput.required = true;
+    } else {
+      customGroup.style.display = 'none';
+      customInput.required = false;
+      customInput.value = '';
+    }
+  }
+
+  function toggleCustomSchoolTo() {
+    const val = getEl('school_to').value;
+    const customGroup = getEl('custom_school_to_group');
+    const customInput = getEl('custom_school_to');
+    if (val === 'Sekolah Lain') {
+      customGroup.style.display = 'block';
+      customInput.required = true;
+    } else {
+      customGroup.style.display = 'none';
+      customInput.required = false;
+      customInput.value = '';
+    }
+  }
+
+  function toggleCustomSchoolFromEdit() {
+    const val = getEl('edit_school_from').value;
+    const customGroup = getEl('edit_custom_school_from_group');
+    const customInput = getEl('edit_custom_school_from');
+    if (val === 'Sekolah Lain') {
+      customGroup.style.display = 'block';
+      customInput.required = true;
+    } else {
+      customGroup.style.display = 'none';
+      customInput.required = false;
+      customInput.value = '';
+    }
+  }
+
+  function toggleCustomSchoolToEdit() {
+    const val = getEl('edit_school_to').value;
+    const customGroup = getEl('edit_custom_school_to_group');
+    const customInput = getEl('edit_custom_school_to');
+    if (val === 'Sekolah Lain') {
+      customGroup.style.display = 'block';
+      customInput.required = true;
+    } else {
+      customGroup.style.display = 'none';
+      customInput.required = false;
+      customInput.value = '';
+    }
+  }
+
+  const dataHandler = {
+    onDataChanged(data) {
+      if (!Array.isArray(data)) {
+        console.warn('⚠️ Non-array data received');
+        allRecords = [];
+      } else {
+        allRecords = data;
+      }
+      updateAllCharts();
+    }
+  };
+
+  
+async function startApp() {
+  console.log('🚀 App started (Google Sheet mode)');
+  await loadFromGoogleSheet();
+
+  const savedRole = localStorage.getItem('role');
+
+  if (savedRole) {
+    currentRole = savedRole;
+   const loginModal = getEl('login-modal');
+if (loginModal) loginModal.classList.remove('show');
+
+    applyRolePermissions();
+  }
+} function loginSystem() {
+
+  currentRole = getEl('login-role').value;
+
+  if (!currentRole) {
+    showToast('⚠️ Pilih peranan dahulu', '#dc2626');
+    return;
+  }
+
+  localStorage.setItem('role', currentRole);
+
+  const modal = getEl('login-modal');
+  if (modal) modal.classList.remove('show');
+
+  applyRolePermissions();
+
+  showToast('✅ Login berjaya', '#059669');
+}
+
+/* =========================
+   EVENT LISTENER (SAFE)
+========================= */
+window.addEventListener('DOMContentLoaded', () => {
+
+  const roleSelect = document.getElementById('login-role');
+
+  if (roleSelect) {
+    roleSelect.addEventListener('keypress', e => {
+      if (e.key === 'Enter') loginSystem();
+    });
+  }
+
+});
+
+/* =========================
+   START APP
+========================= */
+window.addEventListener('load', () => {
+
+  startApp();
+
+  setInterval(async () => {
+
+    if (getEl('add-modal')?.classList.contains('show')) return;
+    if (getEl('edit-modal')?.classList.contains('show')) return;
+
+    await loadFromGoogleSheet();
+
+  }, 30000);
+
+});
+
+
+
+  function openAddModal() {
+
+  if (!isAdmin()) {
+    showToast("⛔ Tiada kebenaran", "#dc2626");
+    return;
+  }
+
+  getEl('add-modal').classList.add('show');
+}
+
+function closeAddModal(event) {
+  if (event && event.target !== getEl('add-modal')) return;
+  getEl('add-modal').classList.remove('show');
+}
+
+
+ // ===== GOOGLE SHEET API =====
+// ===== GOOGLE SHEET API =====
+async function saveToGoogleSheet(data) {
+  try {
+    const response = await fetch(
+      "https://script.google.com/macros/s/AKfycby69sJGDkUODlGlcKhHUbDkIti05-BuwIxRjFtsp-4MH-XJjbAk_--UUY4RJM9SelKJ/exec",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8" // ⭐ PALING PENTING
+        },
+        body: JSON.stringify(data),
+        redirect: "follow"
+      }
+    );
+
+    const text = await response.text();
+    return JSON.parse(text);
+
+  } catch (error) {
+    console.error("Google Sheet Error:", error);
+    return { result: "error" };
+  }
+}
+function updateAllCharts() {
+  updateKPIs();
+  updateDonutChart();
+  updateMonthlyChartJS();
+  updateCategoryChart();
+  updateCapacityCards();
+  updateRanking();
+  updateAIInsights();
+  checkCriticalCapacity();
+  renderList();
+}
+
+
+ async function handleAddSubmit(event) {
+if (!isAdmin()) {
+  showToast("⛔ Tiada kebenaran", "#dc2626");
+  return;
+}
+
+  event.preventDefault();
+
+  let schoolFrom = getEl('school_from').value;
+  let schoolTo = getEl('school_to').value;
+
+  if (schoolFrom === 'Sekolah Lain') {
+    schoolFrom = getEl('custom_school_from').value;
+  }
+
+  if (schoolTo === 'Sekolah Lain') {
+    schoolTo = getEl('custom_school_to').value;
+  }
+
+  const newRecord = {
+    student_name: getEl('student_name').value,
+    school_from: schoolFrom,
+    school_to: schoolTo,
+    grade: getEl('grade').value,
+    transfer_category: getEl('transfer_category').value,
+    status: getEl('status').value,
+    date_applied: getEl('date_applied').value,
+    notes: getEl('notes').value || ''
+  };
+
+  const submitBtn = event.target.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.textContent = '⏳ Menyimpan...';
+
+  try {
+
+    const result = await saveToGoogleSheet(newRecord);
+    console.log("RESPONSE GOOGLE:", result);
+
+    if (result.result === "success") {
+
+      showToast('✅ Disimpan ke Google Sheet!', '#059669');
+
+      closeAddModal();
+      event.target.reset();
+
+      // ⭐ PALING PENTING — refresh data dashboard
+      await loadFromGoogleSheet();
+
+    } else {
+      showToast('❌ Gagal simpan ke Google Sheet', '#dc2626');
+    }
+
+  } catch (err) {
+    console.error(err);
+    showToast('❌ Ralat sistem', '#dc2626');
+  }
+
+  submitBtn.disabled = false;
+  submitBtn.textContent = '💾 Simpan Permohonan';
+}
+
+
+
+ function openEditModal(recordId) {
+
+  // 🔐 SECURITY CHECK
+ if (!isAdmin()) {
+    showToast("⛔ Tiada kebenaran untuk edit", "#dc2626");
+    return;
+  }
+
+  const record = allRecords.find(
+    r => String(r.__backendId) === String(recordId)
+  );
+
+  if (!record) {
+    showToast('❌ Rekod tidak dijumpai', '#dc2626');
+    return;
+  }
+
+    currentEditingId = recordId;
+    getEl('edit_student_name').value = record.student_name || '';
+    
+    const schoolFromVal = record.school_from || '';
+    const schoolToVal = record.school_to || '';
+
+    const mainSchools = SCHOOLS.map(s => s.name);
+    
+    if (mainSchools.includes(schoolFromVal)) {
+      getEl('edit_school_from').value = schoolFromVal;
+      getEl('edit_custom_school_from_group').style.display = 'none';
+    } else {
+      getEl('edit_school_from').value = 'Sekolah Lain';
+      getEl('edit_custom_school_from_group').style.display = 'block';
+      getEl('edit_custom_school_from').value = schoolFromVal;
+    }
+
+    if (mainSchools.includes(schoolToVal)) {
+      getEl('edit_school_to').value = schoolToVal;
+      getEl('edit_custom_school_to_group').style.display = 'none';
+    } else {
+      getEl('edit_school_to').value = 'Sekolah Lain';
+      getEl('edit_custom_school_to_group').style.display = 'block';
+      getEl('edit_custom_school_to').value = schoolToVal;
+    }
+
+    getEl('edit_grade').value = record.grade || '';
+    getEl('edit_transfer_category').value = record.transfer_category || '';
+    getEl('edit_status').value = record.status || '';
+    getEl('edit_date_applied').value = record.date_applied || '';
+    getEl('edit_notes').value = record.notes || '';
+    
+    getEl('edit-modal').classList.add('show');
+  }
+
+  function closeEditModal(event) {
+    if (event && event.target !== getEl('edit-modal')) return;
+    getEl('edit-modal').classList.remove('show');
+    currentEditingId = null;
+  }
+
+ async function handleEditSubmit(event) {
+  event.preventDefault();
+
+  // 🔐 SECURITY CHECK
+ if (!isAdmin()) {
+    showToast("⛔ Tiada kebenaran", "#dc2626");
+    return;
+  }
+
+  if (!currentEditingId) return;
+
+
+  let schoolFrom = getEl('edit_school_from').value;
+  let schoolTo = getEl('edit_school_to').value;
+
+  if (schoolFrom === 'Sekolah Lain') {
+    schoolFrom = getEl('edit_custom_school_from').value;
+  }
+  if (schoolTo === 'Sekolah Lain') {
+    schoolTo = getEl('edit_custom_school_to').value;
+  }
+
+  const updatedRecord = {
+    id: currentEditingId,
+    action: "update",
+    student_name: getEl('edit_student_name').value,
+    school_from: schoolFrom,
+    school_to: schoolTo,
+    grade: getEl('edit_grade').value,
+    transfer_category: getEl('edit_transfer_category').value,
+    status: getEl('edit_status').value,
+    date_applied: getEl('edit_date_applied').value,
+    notes: getEl('edit_notes').value || ''
+  };
+
+  const result = await saveToGoogleSheet(updatedRecord);
+
+  if (result.result === "success") {
+    showToast('✅ Rekod dikemaskini!', '#059669');
+    closeEditModal();
+    await loadFromGoogleSheet();
+  } else {
+    showToast('❌ Gagal kemaskini', '#dc2626');
+  }
+}
+
+
+ async function deleteRecord() {
+
+  // 🔐 SECURITY CHECK
+ if (!isAdmin()) {
+    showToast("⛔ Tiada kebenaran", "#dc2626");
+    return;
+  }
+
+  if (!currentEditingId) return;
+
+
+  const confirmed = confirm("Padam permohonan ini?");
+  if (!confirmed) return;
+
+  const result = await saveToGoogleSheet({
+    action: "delete",
+    id: currentEditingId
+  });
+
+  if (result.result === "success") {
+    showToast('✅ Rekod dipadam', '#059669');
+    closeEditModal();
+    await loadFromGoogleSheet();
+  } else {
+    showToast('❌ Gagal padam', '#dc2626');
+  }
+}
+
+
+ function updateAIInsights() {
+
+  const container = getEl('ai-insights');
+  if (!container) return;
+
+  if (allRecords.length === 0) {
+    container.innerHTML = `
+      <div style="padding:12px;background:#f8fafc;border-radius:10px;">
+        Tiada data untuk analisis.
+      </div>`;
+    return;
+  }
+
+  // =========================
+  // DATA ASAS
+  // =========================
+  const approved = allRecords.filter(r => r.status === 'Diluluskan');
+  const approvalRate =
+    Math.round((approved.length / allRecords.length) * 100);
+
+  // kategori paling tinggi
+  const categoryCount = {};
+  allRecords.forEach(r => {
+    if (!r.transfer_category) return;
+    categoryCount[r.transfer_category] =
+      (categoryCount[r.transfer_category] || 0) + 1;
+  });
+
+  const topCategory = Object.entries(categoryCount)
+    .sort((a,b)=>b[1]-a[1])[0];
+
+  // trend bulan semasa
+  const monthNow = new Date().getMonth();
+  const thisMonth = allRecords.filter(r => {
+    if (!r.date_applied) return false;
+    return new Date(r.date_applied).getMonth() === monthNow;
+  }).length;
+
+  // =========================
+  // START HTML (PENTING)
+  // =========================
+  let html = `
+    <div style="padding:10px;background:#eef2ff;border-radius:8px;font-size:12px;font-weight:600;">
+      📊 Kadar kelulusan: ${approvalRate}%
+    </div>
+
+    <div style="padding:10px;background:#fef9c3;border-radius:8px;font-size:12px;font-weight:600;">
+      🏆 Kategori tertinggi: ${topCategory ? topCategory[0] : '-'}
+    </div>
+
+    <div style="padding:10px;background:#ecfeff;border-radius:8px;font-size:12px;font-weight:600;">
+      📅 Permohonan bulan ini: ${thisMonth}
+    </div>
+  `;
+
+  // =========================
+  // AUTO RECOMMENDATION
+  // =========================
+  const highPressureSchools = SCHOOLS.filter(s =>
+    getSchoolCapacityPct(s.name) >= 85
+  );
+
+  if (highPressureSchools.length > 0) {
+
+    html += `
+      <div style="
+        margin-top:10px;
+        padding:10px;
+        background:#fee2e2;
+        border-radius:8px;
+        font-size:12px;
+        font-weight:700;">
+        🤖 Cadangan Sekolah Alternatif
+      </div>
+    `;
+
+    highPressureSchools.forEach(s => {
+
+      const alternatives = getAlternativeSchools(s.name);
+
+      html += `
+        <div style="
+          background:#f8fafc;
+          padding:10px;
+          border-left:4px solid #dc2626;
+          margin-top:6px;
+          font-size:12px;">
+          ⚠️ ${s.name} hampir penuh.<br>
+          Cadangan:
+          <b>${alternatives
+            .map(a => `${a.name} (${a.pct}%)`)
+            .join(', ')}</b>
+        </div>
+      `;
+    });
+  }
+
+  // =========================
+  // PAPAR
+  // =========================
+  container.innerHTML = html;
+}
+
+  function updateDonutChart() {
+    const approved = allRecords.filter(r => r.status === 'Diluluskan').length;
+    const pending = allRecords.filter(r => r.status === 'Dalam Proses').length;
+    const rejected = allRecords.filter(r => r.status === 'Ditolak').length;
+
+    const canvas = getEl('donut-chart');
+    if (!canvas) return;
+
+    if (charts.donut) charts.donut.destroy();
+
+    charts.donut = new Chart(canvas, {
+      type: 'doughnut',
+      data: {
+        labels: ['Diluluskan', 'Dalam Proses', 'Ditolak'],
+        datasets: [{
+          data: [approved, pending, rejected],
+          backgroundColor: ['#059669', '#d97706', '#dc2626'],
+          borderColor: '#fff',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { size: 12, weight: '600' }, padding: 15 } }
+        }
+      }
+    });
+  }
+
+  function updateMonthlyChartJS() {
+    const monthlyCount = Array(12).fill(0);
+    allRecords.forEach(r => {
+      if (r.date_applied) {
+        const date = new Date(r.date_applied);
+        const month = date.getMonth();
+        monthlyCount[month]++;
+      }
+    });
+
+    const canvas = getEl('monthly-chart');
+    if (!canvas) return;
+
+    if (charts.monthly) charts.monthly.destroy();
+
+    const colors = ['#0b2a5b', '#1e4fa3', '#2d5fa8', '#0b5a9e', '#1472c4', '#3b82f6', '#0ea5e9', '#06b6d4', '#10b981', '#059669', '#d97706', '#dc2626'];
+
+    charts.monthly = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: MONTHS,
+        datasets: [{
+          label: 'Permohonan',
+          data: monthlyCount,
+          backgroundColor: colors,
+          borderRadius: 8,
+          borderSkipped: false
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1 } }
+        }
+      }
+    });
+  }
+
+  function updateCategoryChart() {
+    const categoryCounts = {};
+    allRecords.forEach(r => {
+      if (r.transfer_category) {
+        categoryCounts[r.transfer_category] = (categoryCounts[r.transfer_category] || 0) + 1;
+      }
+    });
+
+    const canvas = getEl('category-chart');
+    if (!canvas) return;
+
+    if (charts.category) charts.category.destroy();
+
+    const labels = Object.keys(categoryCounts);
+    const data = Object.values(categoryCounts);
+    
+    const categoryColors = {
+      'Dalam Daerah': '#0b2a5b',
+      'Antara Daerah': '#1e4fa3',
+      'Antara Negeri': '#2d5fa8',
+      'Rayuan Khas': '#f59e0b',
+      'Aliran/Program': '#10b981',
+      'Belajar Semula/Cicir': '#8b5cf6',
+      'Sekolah Swasta': '#ec4899',
+      'Murid Bukan Warganegara': '#06b6d4',
+      'Murid Warganegara Tanpa Dokumen': '#f97316'
+    };
+
+    const colors = labels.map(label => categoryColors[label] || '#64748b');
+
+    charts.category = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Bilangan Permohonan',
+          data: data,
+          backgroundColor: colors,
+          borderRadius: 8,
+          borderSkipped: false
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          x: { beginAtZero: true, ticks: { stepSize: 1 } }
+        }
+      }
+    });
+  }
+
+  function updateCapacityCards() {
+
+  const transfersTo = {};
+
+  allRecords
+    .filter(r => r.status === 'Diluluskan')
+    .forEach(r => {
+      if (r.school_to) {
+        transfersTo[r.school_to] =
+          (transfersTo[r.school_to] || 0) + 1;
+      }
+    });
+
+  let html = '';
+
+  SCHOOLS.forEach(school => {
+
+    const extra = transfersTo[school.name] || 0;
+    const current = school.enrolled + extra;
+    const pct = Math.round((current / school.capacity) * 100);
+
+    // 🎨 WARNA HEATMAP
+    let heatColor = '#dcfce7';   // hijau
+    let borderColor = '#22c55e';
+    let label = 'RENDAH';
+
+    if (pct >= 95) {
+      heatColor = '#fee2e2';     // merah
+      borderColor = '#dc2626';
+      label = 'KRITIKAL';
+    } else if (pct >= 85) {
+      heatColor = '#ffedd5';     // oren
+      borderColor = '#f97316';
+      label = 'TINGGI';
+    } else if (pct >= 75) {
+      heatColor = '#fef9c3';     // kuning
+      borderColor = '#eab308';
+      label = 'SEDERHANA';
+    }
+
+    html += `
+      <div class="capacity-card heat-card"
+           style="background:${heatColor};border-color:${borderColor};">
+
+        <div style="display:flex;justify-content:space-between;align-items:start;">
+          <div>
+            <p style="font-size:14px;font-weight:700;margin:0;">
+              ${school.name}
+            </p>
+            <p style="font-size:11px;margin-top:4px;color:#475569;">
+              ${label}
+            </p>
+          </div>
+
+          <div style="
+            font-size:20px;
+            font-weight:800;
+            color:${borderColor};">
+            ${pct}%
+          </div>
+        </div>
+
+        <div class="capacity-bar">
+          <div class="capacity-fill"
+               style="width:${Math.min(pct,100)}%;
+               background:${borderColor};">
+          </div>
+        </div>
+
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          font-size:11px;
+          color:#475569;
+          margin-top:6px;">
+          <span>${current} pelajar</span>
+          <span>Kapasiti ${school.capacity}</span>
+        </div>
+
+      </div>
+    `;
+  });
+
+  setHTML('capacity-container', html);
+}
+
+function getSchoolCapacityPct(schoolName) {
+
+  const school = SCHOOLS.find(s => s.name === schoolName);
+  if (!school) return 0;
+
+  const extra = allRecords.filter(r =>
+    r.status === 'Diluluskan' &&
+    r.school_to === schoolName
+  ).length;
+
+  return Math.round(((school.enrolled + extra) / school.capacity) * 100);
+}
+function getAlternativeSchools(currentSchool) {
+
+  return SCHOOLS
+    .filter(s => s.name !== currentSchool)
+    .map(s => ({
+      name: s.name,
+      pct: getSchoolCapacityPct(s.name)
+    }))
+    .sort((a,b) => a.pct - b.pct) // paling kosong atas
+    .slice(0,3); // TOP 3
+}
+
+  function checkCriticalCapacity() {
+    const transfersTo = {};
+    allRecords.filter(r => r.status === 'Diluluskan').forEach(r => {
+      if (r.school_to) transfersTo[r.school_to] = (transfersTo[r.school_to] || 0) + 1;
+    });
+
+    const critical = [];
+    SCHOOLS.forEach(s => {
+      const extra = transfersTo[s.name] || 0;
+      const current = s.enrolled + extra;
+      const pct = Math.round((current / s.capacity) * 100);
+      if (pct > 90) critical.push({ name: s.name, pct, current, capacity: s.capacity });
+    });
+
+    let html = '';
+    critical.forEach(item => {
+      html += `<div class="critical-alert">
+        <p>⚠️ KAPASITI KRITIKAL: ${item.name} mencapai ${item.pct}% (${item.current}/${item.capacity})</p>
+      </div>`;
+    });
+
+    getEl('critical-alerts').innerHTML = html;
+  }
+
+  function handleSearch() {
+    const query = getEl('search-input').value.trim().toLowerCase();
+    const results = getEl('search-results');
+
+    if (query.length < 2) {
+      results.classList.remove('show');
+      return;
+    }
+
+    const filtered = allRecords.filter(r => r.student_name && r.student_name.toLowerCase().includes(query)).slice(0, 8);
+
+    if (filtered.length === 0) {
+      results.innerHTML = '<div style="padding: 10px 14px; color: #94a3b8; font-size: 12px;">Tiada hasil</div>';
+      results.classList.add('show');
+      return;
+    }
+
+    let html = '';
+    filtered.forEach(record => {
+      const statusColor = { 'Diluluskan': '#059669', 'Dalam Proses': '#d97706', 'Ditolak': '#dc2626' };
+      const c = statusColor[record.status] || '#94a3b8';
+      html += `<div class="search-result-item" onclick="searchSelectRecord('${record.__backendId}')">
+        <div style="font-weight: 600;">${record.student_name}</div>
+        <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">
+          ${record.school_from} → ${record.school_to} | <span style="color: ${c}; font-weight: 600;">${record.status}</span>
+        </div>
+      </div>`;
+    });
+
+    results.innerHTML = html;
+    results.classList.add('show');
+  }
+
+  function searchSelectRecord(id) {
+  getEl('search-results').classList.remove('show');
+  getEl('search-input').value = '';
+
+  switchTab('senarai');
+  renderList();
+
+  setTimeout(() => {
+    const row = document.querySelector(`[data-id="${id}"]`);
+    if (row) row.scrollIntoView({behavior:'smooth'});
+  }, 200);
+}
+
+  function renderList() {
+
+  const container = getEl('list-container');
+  const emptyMsg = getEl('list-empty');
+  if (!container || !emptyMsg) return;
+
+  const filterVal = getEl('list-filter-status')?.value || 'all';
+  const filtered =
+    filterVal === 'all'
+      ? allRecords
+      : allRecords.filter(r => r.status === filterVal);
+
+  if (filtered.length === 0) {
+    container.innerHTML = '';
+    emptyMsg.style.display = 'block';
+    return;
+  }
+
+  emptyMsg.style.display = 'none';
+
+  const statusColor = {
+    'Diluluskan': '#059669',
+    'Dalam Proses': '#d97706',
+    'Ditolak': '#dc2626'
+  };
+
+  let html = `
+    <table class="rank-table">
+      <thead>
+        <tr>
+          <th>Nama</th>
+          <th>Asal</th>
+          <th>Baharu</th>
+          <th>Tingkatan</th>
+          <th>Kategori</th>
+          <th>Tarikh</th>
+          <th>Status</th>
+          <th style="text-align:center;">Tindakan</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  filtered.forEach(r => {
+
+    // ✅ ID selamat
+    const rowId = String(r.__backendId || r.id || '');
+
+    const c = statusColor[r.status] || '#94a3b8';
+    const dateStr = r.date_applied
+      ? new Date(r.date_applied).toLocaleDateString('ms-MY')
+      : '-';
+
+    html += `
+<tr data-id="${rowId}">
+  <td>${r.student_name || '-'}</td>
+  <td>${r.school_from || '-'}</td>
+  <td>${r.school_to || '-'}</td>
+  <td>${r.grade || '-'}</td>
+  <td>${r.transfer_category || '-'}</td>
+  <td>${dateStr}</td>
+
+  <td>
+    <span style="
+      background:${c}15;
+      color:${c};
+      padding:4px 8px;
+      border-radius:6px;
+      font-size:10px;
+      font-weight:700;">
+      ${r.status}
+    </span>
+  </td>
+
+  <td style="text-align:center;">
+    ${
+      currentRole === "PPD"
+        ? `<button onclick="openEditModal('${rowId}')" class="edit-btn">✏️ Edit</button>`
+        : `<span style="font-size:11px;color:#94a3b8;font-weight:600;">👁️ View</span>`
+    }
+  </td>
+</tr>
+`;
+
+  });
+
+  html += `
+      </tbody>
+    </table>
+  `;
+
+  container.innerHTML = html;
+}
+
+
+  function updateRanking() {
+    const approved = allRecords.filter(r => r.status === 'Diluluskan');
+    const outgoing = {};
+    const incoming = {};
+    const schoolNames = SCHOOLS.map(s => s.name);
+    
+    approved.forEach(r => {
+      if (r.school_from && schoolNames.includes(r.school_from)) {
+        outgoing[r.school_from] = (outgoing[r.school_from] || 0) + 1;
+      }
+      if (r.school_to && schoolNames.includes(r.school_to)) {
+        incoming[r.school_to] = (incoming[r.school_to] || 0) + 1;
+      }
+    });
+
+    const sortedOut = Object.entries(outgoing).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const sortedIn = Object.entries(incoming).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+    let html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">';
+    
+    html += '<div><h3 style="font-size: 13px; font-weight: 700; color: #0b2a5b; margin: 0 0 12px 0;">📤 Bilangan Keluar</h3>';
+    html += '<table class="rank-table"><thead><tr><th>No.</th><th>Sekolah</th><th>Keluar</th></tr></thead><tbody>';
+    sortedOut.forEach((entry, idx) => {
+      html += `<tr><td>${idx + 1}</td><td style="font-size: 12px; font-weight: 600;">${entry[0]}</td><td style="font-weight: 700; color: #dc2626; text-align: right;">${entry[1]}</td></tr>`;
+    });
+    html += '</tbody></table></div>';
+
+    html += '<div><h3 style="font-size: 13px; font-weight: 700; color: #0b2a5b; margin: 0 0 12px 0;">📥 Bilangan Masuk</h3>';
+    html += '<table class="rank-table"><thead><tr><th>No.</th><th>Sekolah</th><th>Masuk</th></tr></thead><tbody>';
+    sortedIn.forEach((entry, idx) => {
+      html += `<tr><td>${idx + 1}</td><td style="font-size: 12px; font-weight: 600;">${entry[0]}</td><td style="font-weight: 700; color: #059669; text-align: right;">${entry[1]}</td></tr>`;
+    });
+    html += '</tbody></table></div>';
+    
+    html += '</div>';
+
+    getEl('ranking-container').innerHTML = (sortedOut.length > 0 || sortedIn.length > 0) ? html : '<p style="color: #94a3b8; text-align: center; padding: 40px;">Tiada data</p>';
+  }
+
+  function exportExcel() {
+    if (allRecords.length === 0) {
+      showToast('❌ Tiada data untuk export', '#dc2626');
+      return;
+    }
+
+    const data = allRecords.map(r => ({
+      'Nama': r.student_name,
+      'Sekolah Asal': r.school_from,
+      'Sekolah Baharu': r.school_to,
+      'Tingkatan': r.grade,
+      'Kategori': r.transfer_category,
+      'Tarikh Mohon': r.date_applied ? new Date(r.date_applied).toLocaleDateString('ms-MY') : '-',
+      'Status': r.status,
+      'Catatan': r.notes || ''
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Permohonan');
+    
+    ws['!cols'] = [
+      { wch: 15 }, { wch: 18 }, { wch: 18 }, { wch: 12 }, { wch: 18 }, { wch: 15 }, { wch: 12 }, { wch: 25 }
+    ];
+
+    XLSX.writeFile(wb, `Pertukaran_Murid_${new Date().toLocaleDateString('ms-MY')}.xlsx`);
+    showToast('✅ Excel dimuat turun!', '#059669');
+  }
+
+  function exportPDFKPM() {
+    if (allRecords.length === 0) {
+      showToast('❌ Tiada data untuk export', '#dc2626');
+      return;
+    }
+
+    const today = new Date().toLocaleDateString('ms-MY');
+    const total = allRecords.length;
+    const approved = allRecords.filter(r => r.status === 'Diluluskan').length;
+    const pending = allRecords.filter(r => r.status === 'Dalam Proses').length;
+    const rejected = allRecords.filter(r => r.status === 'Ditolak').length;
+
+    let html = `
+      <div style="font-family: Arial, sans-serif; padding: 40px;">
+        <div style="text-align: center; margin-bottom: 30px; border-bottom: 3px solid #0b2a5b; padding-bottom: 20px;">
+          <h1 style="color: #0b2a5b; margin: 0 0 5px 0;">KEMENTERIAN PENDIDIKAN MALAYSIA</h1>
+          <p style="color: #1e4fa3; margin: 0 0 15px 0; font-weight: bold;">LAPORAN PERTUKARAN MURID</p>
+          <p style="color: #666; margin: 0; font-size: 12px;">Dijana: ${today}</p>
+        </div>
+
+        <table style="width: 100%; margin-bottom: 30px; border-collapse: collapse;">
+          <tr style="background: #0b2a5b; color: white;">
+            <td style="padding: 12px; font-weight: bold;">Status</td>
+            <td style="padding: 12px; text-align: right; font-weight: bold;">Bilangan</td>
+            <td style="padding: 12px; text-align: right; font-weight: bold;">Peratus</td>
+          </tr>
+          <tr style="background: #f0f4fa; border-bottom: 1px solid #ddd;">
+            <td style="padding: 12px;">Diluluskan</td>
+            <td style="padding: 12px; text-align: right;">${approved}</td>
+            <td style="padding: 12px; text-align: right;">${Math.round((approved/total)*100)}%</td>
+          </tr>
+          <tr style="background: #fff; border-bottom: 1px solid #ddd;">
+            <td style="padding: 12px;">Dalam Proses</td>
+            <td style="padding: 12px; text-align: right;">${pending}</td>
+            <td style="padding: 12px; text-align: right;">${Math.round((pending/total)*100)}%</td>
+          </tr>
+          <tr style="background: #f0f4fa; border-bottom: 1px solid #ddd;">
+            <td style="padding: 12px;">Ditolak</td>
+            <td style="padding: 12px; text-align: right;">${rejected}</td>
+            <td style="padding: 12px; text-align: right;">${Math.round((rejected/total)*100)}%</td>
+          </tr>
+          <tr style="background: #0b2a5b; color: white; font-weight: bold;">
+            <td style="padding: 12px;">JUMLAH</td>
+            <td style="padding: 12px; text-align: right;">${total}</td>
+            <td style="padding: 12px; text-align: right;">100%</td>
+          </tr>
+        </table>
+
+        <p style="color: #666; font-size: 11px; text-align: center; margin-top: 40px;">
+          Dokumen ini dijana secara automatik oleh Sistem Pertukaran Murid KPM
+        </p>
+      </div>
+    `;
+
+    const element = document.createElement('div');
+    element.innerHTML = html;
+
+    const opt = {
+      margin: 10,
+      filename: `Laporan_Pertukaran_${new Date().toLocaleDateString('ms-MY')}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+    };
+
+    html2pdf().set(opt).from(element).save();
+    showToast('✅ PDF KPM dijana!', '#059669');
+  }
+
+  function switchTab(tab) {
+    document.querySelectorAll('[role="tabpanel"]').forEach(p => p.style.display = 'none');
+    const tabEl = getEl('tab-' + tab);
+    if (tabEl) tabEl.style.display = 'block';
+
+    document.querySelectorAll('[data-tab]').forEach(btn => {
+      const isActive = btn.dataset.tab === tab;
+      btn.classList.toggle('active', isActive);
+      btn.style.background = isActive ? 'linear-gradient(135deg, #0b2a5b, #1e4fa3)' : 'transparent';
+      btn.style.color = isActive ? '#fff' : '#64748b';
+    });
+  }
+
+  function showToast(msg, color) {
+    const toast = getEl('toast');
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.style.background = color || '#059669';
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    const btn = getEl('dark-mode-toggle');
+    if (btn) btn.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+  }
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-box')) {
+      getEl('search-results').classList.remove('show');
+    }
+  });
+
+
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cd0af63611cb2e8',t:'MTc3MDk0NzUzMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+<!-- LOGIN MODAL -->
+<div id="login-modal" class="modal-overlay show">
+  <div class="modal-content" style="max-width:400px;">
+    <h2 style="font-size:20px;font-weight:800;margin-bottom:20px;">
+      🔐 Login Dashboard
+    </h2>
+
+    <div class="form-group">
+      <label>Pilih Peranan</label>
+      <select id="login-role">
+        <option value="PPD">🧑‍💼 PPD (Admin)</option>
+        <option value="Pengguna">👤 Pengguna</option>
+      </select>
+    </div>
+
+    <button class="btn-primary" onclick="loginSystem()">
+      Masuk Dashboard
+    </button>
+  </div>
+</div>
+
+</body>
+</html>

@@ -546,6 +546,8 @@ let isLoadingSheet = false;
   let charts = { donut: null, monthly: null, category: null };
   let currentEditingId = null;
 let currentRole = null;
+const ADMIN_PASSWORD = "ppdkm2026";
+
 function isAdmin() {
   return currentRole === "PPD";
 }
@@ -751,13 +753,23 @@ if (loginModal) loginModal.classList.remove('show');
   }
 } function loginSystem() {
 
-  currentRole = getEl('login-role').value;
+  const role = getEl('login-role').value;
+  const pass = getEl('admin-password').value;
 
-  if (!currentRole) {
+  if (!role) {
     showToast('⚠️ Pilih peranan dahulu', '#dc2626');
     return;
   }
 
+  // 🔐 CHECK PASSWORD ADMIN
+  if (role === "PPD") {
+    if (pass !== ADMIN_PASSWORD) {
+      showToast("❌ Password admin salah", "#dc2626");
+      return;
+    }
+  }
+
+  currentRole = role;
   localStorage.setItem('role', currentRole);
 
   const modal = getEl('login-modal');
@@ -767,6 +779,7 @@ if (loginModal) loginModal.classList.remove('show');
 
   showToast('✅ Login berjaya', '#059669');
 }
+
 
 /* =========================
    EVENT LISTENER (SAFE)
@@ -1743,6 +1756,13 @@ function getAlternativeSchools(currentSchool) {
     <div class="form-group">
       <label>Pilih Peranan</label>
       <select id="login-role">
+<div class="form-group">
+  <label>Password Admin (PPD)</label>
+  <input type="password"
+         id="admin-password"
+         placeholder="Masukkan password admin">
+</div>
+
         <option value="PPD">🧑‍💼 PPD (Admin)</option>
         <option value="Pengguna">👤 Pengguna</option>
       </select>

@@ -309,9 +309,17 @@ display:flex;
 flex-direction:column;
 gap:10px;">
 
-  <button onclick="openAddModal()" class="btn-primary">➕</button>
-  <button onclick="exportExcel()" class="btn-primary">📊</button>
-  <button onclick="exportPDFKPM()" class="btn-primary">📄</button>
+ <button onclick="openAddModal()" class="btn-primary">➕</button>
+<button onclick="exportExcel()" class="btn-primary">📊</button>
+<button onclick="exportPDFKPM()" class="btn-primary">📄</button>
+
+<button onclick="logoutSystem()"
+        class="btn-primary"
+        style="background:#dc2626;">
+  🚪
+</button>
+
+
 
 </div>
 
@@ -586,9 +594,7 @@ function applyRolePermissions() {
     if (qa) qa.style.display = "none";
 
     // hide tab buttons
-    if (rankingTabBtn) rankingTabBtn.style.display = "none";
-    if (capacityTabBtn) capacityTabBtn.style.display = "none";
-
+    
     // hide header buttons
     document.querySelectorAll('.tab-btn').forEach(btn => {
       const txt = btn.textContent;
@@ -607,6 +613,22 @@ function applyRolePermissions() {
     // paksa balik ke dashboard
     switchTab("dashboard");
   }
+}
+function logoutSystem() {
+
+  localStorage.removeItem("role");
+  localStorage.removeItem("username");
+
+  currentRole = null;
+
+  setText("user-display", "");
+
+  getEl("login-modal")?.classList.add("show");
+
+  applyRolePermissions();
+  switchTab("dashboard");
+
+  showToast("🚪 Anda telah log keluar", "#dc2626");
 }
 
 function updateKPIs() {

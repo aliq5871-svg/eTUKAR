@@ -1949,6 +1949,23 @@ function getAlternativeSchools(currentSchool) {
     }
   });
 
+function cancelLogin() {
+
+  // kosongkan input
+  getEl("login-username").value = "";
+  getEl("admin-password").value = "";
+
+  // tutup modal
+  getEl("login-modal").classList.remove("show");
+
+  // terus masuk sebagai pengguna biasa
+  currentRole = "Pengguna";
+  applyRolePermissions();
+
+  setText("user-display", "👤 Pengguna");
+
+  showToast("ℹ️ Masuk sebagai pengguna biasa", "#64748b");
+}
 
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cd0af63611cb2e8',t:'MTc3MDk0NzUzMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
@@ -1985,9 +2002,24 @@ function getAlternativeSchools(currentSchool) {
              placeholder="Masukkan password admin">
     </div>
 
-    <button class="btn-primary" onclick="loginSystem()">
-      Masuk Dashboard
-    </button>
+   <div class="modal-actions" style="margin-top:18px; display:flex; gap:10px;">
+  
+  <button type="button"
+          class="btn-secondary"
+          style="flex:1;"
+          onclick="cancelLogin()">
+    Batal
+  </button>
+
+  <button type="button"
+          class="btn-primary"
+          style="flex:1;"
+          onclick="loginSystem()">
+    Masuk Dashboard
+  </button>
+
+</div>
+
 
   </div>
 </div>

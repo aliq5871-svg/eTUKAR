@@ -293,6 +293,126 @@
       main { max-width: 100%; padding: 20px !important; }
       .card-base { box-shadow: none; border: 1px solid #cbd5e1; page-break-inside: avoid; }
     }
+/* =========================
+   MOBILE FRIENDLY FINAL
+========================= */
+@media (max-width: 768px) {
+
+  /* ===== HEADER ===== */
+  header {
+    padding: 12px 10px !important;
+  }
+
+  header h1 {
+    font-size: 16px !important;
+    line-height: 1.3;
+  }
+
+  header p {
+    font-size: 10px !important;
+  }
+
+  /* logo kecil */
+  header img {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  /* susun header vertical */
+  header > div > div {
+    flex-wrap: wrap !important;
+  }
+
+  /* ===== SEARCH ===== */
+  .search-box {
+    width: 100% !important;
+    min-width: unset !important;
+  }
+
+  /* ===== TAB NAV ===== */
+  nav {
+    overflow-x: auto;
+    display: flex;
+    gap: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tab-btn {
+    flex: 0 0 auto !important;
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+    white-space: nowrap;
+  }
+
+  /* ===== KPI CARD ===== */
+  .grid-3col {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .stat-kpi p:last-child {
+    font-size: 24px !important;
+  }
+
+  /* ===== DASHBOARD GRID (FIX PALING PENTING) ===== */
+  section > div[style*="grid-template-columns"] {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ===== CHART ===== */
+  .chart-container {
+    height: 220px !important;
+  }
+
+  /* ===== TABLE ===== */
+  .rank-table {
+    font-size: 11px !important;
+    min-width: 700px; /* swipe horizontal */
+  }
+
+  .rank-table th,
+  .rank-table td {
+    padding: 8px 6px !important;
+  }
+
+  #list-container {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ===== MODAL ===== */
+  .modal-content {
+    width: 95% !important;
+    padding: 16px !important;
+    border-radius: 12px !important;
+    max-height: 90vh !important;
+  }
+
+  /* ===== FLOATING BUTTON ===== */
+  #quick-actions {
+    flex-direction: row !important;
+    bottom: 10px !important;
+    right: 10px !important;
+    gap: 8px !important;
+  }
+
+  #quick-actions button {
+    width: 42px !important;
+    height: 42px !important;
+    padding: 0 !important;
+    font-size: 16px;
+  }
+
+  /* ===== DARK MODE BTN ===== */
+  #dark-mode-toggle {
+    bottom: 10px !important;
+    left: 10px !important;
+    width: 42px !important;
+    height: 42px !important;
+  }
+}
+
   </style>
   <style>body { box-sizing: border-box; }</style>
  </head>
@@ -365,20 +485,45 @@ gap:10px;">
        </svg><input id="search-input" type="text" placeholder="Cari nama pelajar..." onkeyup="handleSearch()">
        <div id="search-results" class="search-results"></div>
       </div>
-      <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;"><button class="tab-btn" 
-style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; display: flex; align-items: center; gap: 6px; font-weight: 700;" onclick="openAddModal()">
-        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-         <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg> Tambah </button> <button class="tab-btn" style="background: rgba(255,255,255,0.18); color: #fff; display: flex; align-items: center; gap: 6px;" onclick="exportExcel()">
-        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-         <path d="M12 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V12" />
-        </svg> Excel </button> <button class="tab-btn" style="background: rgba(255,255,255,0.18); color: #fff; display: flex; align-items: center; gap: 6px;" onclick="exportPDFKPM()">
-        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        </svg> PDF KPM </button>
-      </div>
-     </div>
-    </div>
+     <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+
+  <button class="tab-btn" 
+    style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; display: flex; align-items: center; gap: 6px; font-weight: 700;"
+    onclick="openAddModal()">
+    <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <line x1="12" y1="5" x2="12" y2="19"></line>
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
+    Tambah
+  </button>
+
+  <button class="tab-btn"
+    style="background: rgba(255,255,255,0.18); color: #fff; display: flex; align-items: center; gap: 6px;"
+    onclick="exportExcel()">
+    <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V12" />
+    </svg>
+    Excel
+  </button>
+
+  <button class="tab-btn"
+    style="background: rgba(255,255,255,0.18); color: #fff; display: flex; align-items: center; gap: 6px;"
+    onclick="exportPDFKPM()">
+    <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    </svg>
+    PDF KPM
+  </button>
+
+  <!-- 🔐 ADMIN LOGIN -->
+  <button class="tab-btn"
+    style="background:#dc2626;color:#fff;"
+    onclick="showAdminLogin()">
+    🔐 Admin Login
+  </button>
+
+</div>
+
    </header>
    <main style="max-width: 1600px; margin: 0 auto; padding: 24px 20px 40px;"><!-- Critical Alerts -->
     <div id="critical-alerts" style="margin-bottom: 24px;"></div><!-- Tabs -->
@@ -451,7 +596,8 @@ style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; displ
       <div style="margin-bottom: 16px;">
        <h2 style="font-size: 16px; font-weight: 700; color: #0b2a5b; margin: 0 0 12px 0;">📋 Senarai Permohonan</h2><select id="list-filter-status" onchange="renderList()" class="filter-select" style="padding: 8px 14px; border-radius: 10px; border: 1.5px solid #cbd5e1; font-size: 13px;"> <option value="all">Semua Status</option> <option value="Dalam Proses">Dalam Proses</option> <option value="Diluluskan">Diluluskan</option> <option value="Ditolak">Ditolak</option> </select>
       </div>
-      <div id="list-container" style="overflow-x: auto;"></div>
+      <div id="list-container" style="overflow:auto; -webkit-overflow-scrolling:touch;"></div>
+
       <div id="list-empty" style="text-align: center; padding: 50px 20px; display: none;">
        <p style="font-size: 40px; margin-bottom: 10px;">📋</p>
        <p style="font-size: 14px; color: #94a3b8;">Tiada Permohonan</p>
@@ -630,6 +776,9 @@ function logoutSystem() {
 
   showToast("🚪 Anda telah log keluar", "#dc2626");
 }
+function showAdminLogin() {
+  getEl("login-modal").classList.add("show");
+}
 
 function updateKPIs() {
   const total = allRecords.length;
@@ -766,33 +915,47 @@ async function loadFromGoogleSheet() {
   };
 
   
+// =====================
+// START APP
+// =====================
 async function startApp() {
-  console.log('🚀 App started (Google Sheet mode)');
+
+  console.log('🚀 App started (Auto User Mode)');
   await loadFromGoogleSheet();
 
   const savedRole = localStorage.getItem('role');
 
-  if (savedRole) {
-    currentRole = savedRole;
-   const loginModal = getEl('login-modal');
-if (loginModal) loginModal.classList.remove('show');
-
+  if (savedRole === "PPD") {
+    currentRole = "PPD";
+    getEl('login-modal')?.classList.remove('show');
     applyRolePermissions();
-  }
-}function loginSystem() {
 
-  const role = getEl('login-role')?.value;
-  const username = getEl('login-username')?.value.trim() || "";
-  const password = getEl('admin-password')?.value || "";
+    setText(
+      "user-display",
+      "👤 " + (localStorage.getItem("username") || "Admin")
+    );
 
-  if (!role) {
-    showToast("⚠️ Pilih peranan dahulu", "#dc2626");
     return;
   }
 
-  // =========================
-  // ADMIN LOGIN (PPD)
-  // =========================
+  // default user
+  currentRole = "Pengguna";
+  getEl('login-modal')?.classList.remove('show');
+  applyRolePermissions();
+
+  setText("user-display", "👤 Pengguna");
+}
+
+
+// =====================
+// LOGIN SYSTEM
+// =====================
+function loginSystem() {
+
+  const username = getEl("login-username").value.trim();
+  const role = getEl("login-role").value;
+  const password = getEl("admin-password").value;
+
   if (role === "PPD") {
 
     if (
@@ -804,29 +967,18 @@ if (loginModal) loginModal.classList.remove('show');
     }
   }
 
-  // =========================
-  // USER LOGIN
-  // =========================
-  if (role === "Pengguna") {
-    if (username === "") {
-      showToast("⚠️ Masukkan nama pengguna", "#dc2626");
-      return;
-    }
+  if (role === "Pengguna" && username === "") {
+    showToast("⚠️ Masukkan nama pengguna", "#dc2626");
+    return;
   }
 
-  // =========================
-  // SAVE SESSION
-  // =========================
   currentRole = role;
-
   localStorage.setItem("role", role);
   localStorage.setItem("username", username);
 
-  // ⭐ PAPAR USER DI HEADER
   setText("user-display", "👤 " + username);
 
-  // tutup modal
-  getEl("login-modal")?.classList.remove("show");
+  getEl("login-modal").classList.remove("show");
 
   applyRolePermissions();
 
@@ -834,7 +986,7 @@ if (loginModal) loginModal.classList.remove('show');
 }
 
 
-
+ 
 /* =========================
    EVENT LISTENER (SAFE)
 ========================= */

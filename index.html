@@ -417,17 +417,54 @@
   #tab-senarai .rank-table td:nth-child(7)::before{content:"Status";}
   #tab-senarai .rank-table td:nth-child(8)::before{content:"Tindakan";}
 
-  /* ===== RANKING → SWIPE ===== */
-  #tab-ranking .rank-table{
-    min-width:700px;
-    display:table;
-    font-size:11px !important;
+  /* ===== RANKING MOBILE CARD MODE ===== */
+@media (max-width:768px){
+
+  #ranking-container > div{
+    display:block !important;
   }
 
-  #list-container{
-    overflow-x:auto !important;
-    -webkit-overflow-scrolling:touch;
+  #tab-ranking .rank-table,
+  #tab-ranking .rank-table thead,
+  #tab-ranking .rank-table tbody,
+  #tab-ranking .rank-table th,
+  #tab-ranking .rank-table td,
+  #tab-ranking .rank-table tr{
+    display:block;
+    width:100%;
   }
+
+  #tab-ranking .rank-table thead{
+    display:none;
+  }
+
+  #tab-ranking .rank-table tr{
+    background:#fff;
+    border:1px solid #e2e8f0;
+    border-radius:12px;
+    padding:12px;
+    margin-bottom:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.05);
+  }
+
+  #tab-ranking .rank-table td{
+    border:none !important;
+    display:flex;
+    justify-content:space-between;
+    padding:5px 0 !important;
+    font-size:12px !important;
+  }
+
+  #tab-ranking .rank-table td::before{
+    font-weight:700;
+    color:#0b2a5b;
+  }
+
+  #tab-ranking .rank-table td:nth-child(1)::before{content:"#";}
+  #tab-ranking .rank-table td:nth-child(2)::before{content:"Sekolah";}
+  #tab-ranking .rank-table td:nth-child(3)::before{content:"Bilangan";}
+}
+
 
   /* ===== MODAL ===== */
   .modal-content{

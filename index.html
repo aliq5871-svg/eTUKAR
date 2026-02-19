@@ -696,7 +696,15 @@ gap:10px;">
       <div style="margin-bottom: 16px;">
        <h2 style="font-size: 16px; font-weight: 700; color: #0b2a5b; margin: 0 0 12px 0;">📋 Senarai Permohonan</h2><select id="list-filter-status" onchange="renderList()" class="filter-select" style="padding: 8px 14px; border-radius: 10px; border: 1.5px solid #cbd5e1; font-size: 13px;"> <option value="all">Semua Status</option> <option value="Dalam Proses">Dalam Proses</option> <option value="Diluluskan">Diluluskan</option> <option value="Ditolak">Ditolak</option> </select>
       </div>
-      <div id="list-container" style="overflow:auto; -webkit-overflow-scrolling:touch;"></div>
+      <div id="list-container"
+     style="
+       max-height: 500px;
+       overflow-y: auto;
+       overflow-x: hidden;
+       -webkit-overflow-scrolling: touch;
+     ">
+</div>
+
 
       <div id="list-empty" style="text-align: center; padding: 50px 20px; display: none;">
        <p style="font-size: 40px; margin-bottom: 10px;">📋</p>

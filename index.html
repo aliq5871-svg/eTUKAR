@@ -1174,20 +1174,16 @@ function closeAddModal(event) {
 
 
  // ===== GOOGLE SHEET API =====
-// ===== GOOGLE SHEET API =====
 async function saveToGoogleSheet(data) {
   try {
-    const response = await fetch(
-      "https://script.google.com/macros/s/AKfycby69sJGDkUODlGlcKhHUbDkIti05-BuwIxRjFtsp-4MH-XJjbAk_--UUY4RJM9SelKJ/exec",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8" // ⭐ PALING PENTING
-        },
-        body: JSON.stringify(data),
-        redirect: "follow"
-      }
-    );
+    const response = await fetch(URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(data),
+      redirect: "follow"
+    });
 
     const text = await response.text();
     return JSON.parse(text);
@@ -1914,44 +1910,107 @@ function getAlternativeSchools(currentSchool) {
 }
 
 
-  function updateRanking() {
-    const approved = allRecords.filter(r => r.status === 'Diluluskan');
-    const outgoing = {};
-    const incoming = {};
-    const schoolNames = SCHOOLS.map(s => s.name);
-    
-    approved.forEach(r => {
-      if (r.school_from && schoolNames.includes(r.school_from)) {
-        outgoing[r.school_from] = (outgoing[r.school_from] || 0) + 1;
+ function updateRanking() {
+
+  const approved = allRecords.filter(r => 
+    r.status === 'Diluluskan'
+  );
+
+  const outgoing = {};
+  const incoming = {};
+  const schoolNames = SCHOOLS.map(s => s.name);
+
+  approved.forEach(r => {
+
+    // =========================
+    // KIRA KELUAR (TAPIS CICIR SEKOLAH SAMA)
+    // =========================
+    if (
+      r.school_from &&
+      schoolNames.includes(r.school_from)
+    ) {
+
+      // ❌ Skip hanya untuk keluar
+      if (
+        r.transfer_category === "Belajar Semula/Cicir" &&
+        r.school_from === r.school_to
+      ) {
+        // jangan kira keluar
+      } else {
+        outgoing[r.school_from] =
+          (outgoing[r.school_from] || 0) + 1;
       }
-      if (r.school_to && schoolNames.includes(r.school_to)) {
-        incoming[r.school_to] = (incoming[r.school_to] || 0) + 1;
-      }
-    });
+    }
 
-    const sortedOut = Object.entries(outgoing).sort((a, b) => b[1] - a[1]).slice(0, 5);
-    const sortedIn = Object.entries(incoming).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    // =========================
+    // KIRA MASUK (ASAL)
+    // =========================
+    if (
+      r.school_to &&
+      schoolNames.includes(r.school_to)
+    ) {
+      incoming[r.school_to] =
+        (incoming[r.school_to] || 0) + 1;
+    }
 
-    let html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">';
-    
-    html += '<div><h3 style="font-size: 13px; font-weight: 700; color: #0b2a5b; margin: 0 0 12px 0;">📤 Bilangan Keluar</h3>';
-    html += '<table class="rank-table"><thead><tr><th>No.</th><th>Sekolah</th><th>Keluar</th></tr></thead><tbody>';
-    sortedOut.forEach((entry, idx) => {
-      html += `<tr><td>${idx + 1}</td><td style="font-size: 12px; font-weight: 600;">${entry[0]}</td><td style="font-weight: 700; color: #dc2626; text-align: right;">${entry[1]}</td></tr>`;
-    });
-    html += '</tbody></table></div>';
+  });
 
-    html += '<div><h3 style="font-size: 13px; font-weight: 700; color: #0b2a5b; margin: 0 0 12px 0;">📥 Bilangan Masuk</h3>';
-    html += '<table class="rank-table"><thead><tr><th>No.</th><th>Sekolah</th><th>Masuk</th></tr></thead><tbody>';
-    sortedIn.forEach((entry, idx) => {
-      html += `<tr><td>${idx + 1}</td><td style="font-size: 12px; font-weight: 600;">${entry[0]}</td><td style="font-weight: 700; color: #059669; text-align: right;">${entry[1]}</td></tr>`;
-    });
-    html += '</tbody></table></div>';
-    
-    html += '</div>';
+  const sortedOut = Object.entries(outgoing)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
 
-    getEl('ranking-container').innerHTML = (sortedOut.length > 0 || sortedIn.length > 0) ? html : '<p style="color: #94a3b8; text-align: center; padding: 40px;">Tiada data</p>';
-  }
+  const sortedIn = Object.entries(incoming)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+
+  let html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">';
+
+  // ======================
+  // OUTGOING
+  // ======================
+  html += '<div><h3 style="font-size: 13px; font-weight: 700; color: #0b2a5b; margin: 0 0 12px 0;">📤 Bilangan Keluar</h3>';
+  html += '<table class="rank-table"><thead><tr><th>No.</th><th>Sekolah</th><th>Keluar</th></tr></thead><tbody>';
+
+  sortedOut.forEach((entry, idx) => {
+    html += `
+      <tr>
+        <td>${idx + 1}</td>
+        <td style="font-size: 12px; font-weight: 600;">${entry[0]}</td>
+        <td style="font-weight: 700; color: #dc2626; text-align: right;">
+          ${entry[1]}
+        </td>
+      </tr>`;
+  });
+
+  html += '</tbody></table></div>';
+
+  // ======================
+  // INCOMING (TIDAK DIUBAH)
+  // ======================
+  html += '<div><h3 style="font-size: 13px; font-weight: 700; color: #0b2a5b; margin: 0 0 12px 0;">📥 Bilangan Masuk</h3>';
+  html += '<table class="rank-table"><thead><tr><th>No.</th><th>Sekolah</th><th>Masuk</th></tr></thead><tbody>';
+
+  sortedIn.forEach((entry, idx) => {
+    html += `
+      <tr>
+        <td>${idx + 1}</td>
+        <td style="font-size: 12px; font-weight: 600;">${entry[0]}</td>
+        <td style="font-weight: 700; color: #059669; text-align: right;">
+          ${entry[1]}
+        </td>
+      </tr>`;
+  });
+
+  html += '</tbody></table></div>';
+
+  html += '</div>';
+
+  getEl('ranking-container').innerHTML =
+    (sortedOut.length > 0 || sortedIn.length > 0)
+      ? html
+      : '<p style="color: #94a3b8; text-align: center; padding: 40px;">Tiada data</p>';
+}
+
 
   function exportExcel() {
 

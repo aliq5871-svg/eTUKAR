@@ -904,6 +904,10 @@ gap:10px;">
      </div>
      <div class="form-group"><label for="edit_date_applied">Tarikh Permohonan *</label> <input type="date" id="edit_date_applied" name="date_applied" required>
      </div>
+<div class="form-group">
+  <label for="edit_phone">No Telefon Ibu Bapa *</label>
+  <input type="text" id="edit_phone" name="phone" placeholder="60123456789">
+</div>
      <div class="form-group"><label for="edit_notes">Catatan</label> <textarea id="edit_notes" name="notes" placeholder="Masukkan catatan tambahan..."></textarea>
      </div>
      <div class="modal-actions"><button type="button" class="btn-secondary" onclick="closeEditModal()" style="flex: 1;">Batal</button> <button type="button" class="btn-secondary" onclick="deleteRecord()" style="flex: 1; background: #fecaca; color: #dc2626;">🗑️ Padam</button> <button type="submit" class="btn-primary" style="flex: 1;">💾 Simpan</button>
@@ -945,7 +949,7 @@ gap:10px;">
 
   const MONTHS = ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Dis'];
 const URL =
-"https://script.google.com/macros/s/AKfycbwHkmVB1ONrHry6rbvzzM44UH0dwn8vq6OjUNaidLcXW9jDtqyuKwJNGRWXhCPIi0fW/exec";
+"https://script.google.com/macros/s/AKfycbxnMICR-6eHmpcdku39P3rBlKlhKAav0w3BZsGe71UCYU-wPEYFiM8zf4AhhIlEtMv8/exec";
 
 
   let allRecords = [];
@@ -1070,9 +1074,18 @@ async function loadFromGoogleSheet() {
       : (Array.isArray(data.data) ? data.data : []);
 
     allRecords = rows.map((r,i)=>({
-      ...r,
-      __backendId: String(r.id ?? i)
-    }));
+  id: r.id,
+  student_name: r.student_name,
+  school_from: r.school_from,
+  school_to: r.school_to,
+  grade: r.grade,
+  transfer_category: r.transfer_category,
+  status: r.status,
+  date_applied: r.date_applied,
+  phone: r.phone || r.phone_number || "", // ✅ penting
+  notes: r.notes || "",
+  __backendId: String(r.id ?? i)
+}));
 
     updateAllCharts();
 
@@ -1451,10 +1464,11 @@ if (!isAdmin()) {
     getEl('edit_status').value = record.status || '';
     getEl('edit_date_applied').value = record.date_applied || '';
     getEl('edit_notes').value = record.notes || '';
-    
+    getEl('edit_phone').value = record.phone || '';
     getEl('edit-modal').classList.add('show');
   }
 function sendWhatsApp(name, school, status, phone) {
+console.log("PHONE:", phone);
 
   if (!phone) {
     showToast("⚠️ No telefon tiada", "#dc2626");
@@ -1473,7 +1487,7 @@ function sendWhatsApp(name, school, status, phone) {
     message = `Tuan/Puan, permohonan pertukaran bagi ${name} tidak diluluskan. Sila hubungi pihak PPD untuk maklumat lanjut.`;
   }
 
-  const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+ const url = `https://wa.me/${formatPhone(phone)}?text=${encodeURIComponent(message)}`;
 
   window.open(url, '_blank');
 }
@@ -1492,17 +1506,15 @@ function formatPhone(phone){
     currentEditingId = null;
   }
 
- async function handleEditSubmit(event) {
+async function handleEditSubmit(event) {
   event.preventDefault();
 
-  // 🔐 SECURITY CHECK
- if (!isAdmin()) {
+  if (!isAdmin()) {
     showToast("⛔ Tiada kebenaran", "#dc2626");
     return;
   }
 
   if (!currentEditingId) return;
-
 
   let schoolFrom = getEl('edit_school_from').value;
   let schoolTo = getEl('edit_school_to').value;
@@ -1510,6 +1522,7 @@ function formatPhone(phone){
   if (schoolFrom === 'Sekolah Lain') {
     schoolFrom = getEl('edit_custom_school_from').value;
   }
+
   if (schoolTo === 'Sekolah Lain') {
     schoolTo = getEl('edit_custom_school_to').value;
   }
@@ -1524,6 +1537,7 @@ function formatPhone(phone){
     transfer_category: getEl('edit_transfer_category').value,
     status: getEl('edit_status').value,
     date_applied: getEl('edit_date_applied').value,
+    phone: formatPhone(getEl('edit_phone').value), // ✅ penting
     notes: getEl('edit_notes').value || ''
   };
 

@@ -871,6 +871,10 @@ gap:10px;">
      </div>
      <div class="form-group"><label for="date_applied">Tarikh Permohonan *</label> <input type="date" id="date_applied" name="date_applied" required>
      </div>
+<div class="form-group">
+  <label for="phone">No Telefon Ibu Bapa *</label>
+  <input type="text" id="phone" name="phone" required placeholder="Contoh: 60123456789">
+</div>
      <div class="form-group"><label for="notes">Catatan</label> <textarea id="notes" name="notes" placeholder="Masukkan catatan tambahan..."></textarea>
      </div>
      <div class="modal-actions"><button type="button" class="btn-secondary" onclick="closeAddModal()">Batal</button> <button type="submit" class="btn-primary">💾 Simpan Permohonan</button>
@@ -1355,16 +1359,16 @@ if (!isAdmin()) {
   }
 
   const newRecord = {
-    student_name: getEl('student_name').value,
-    school_from: schoolFrom,
-    school_to: schoolTo,
-    grade: getEl('grade').value,
-    transfer_category: getEl('transfer_category').value,
-    status: getEl('status').value,
-    date_applied: getEl('date_applied').value,
-    notes: getEl('notes').value || ''
-  };
-
+  student_name: getEl('student_name').value,
+  school_from: schoolFrom,
+  school_to: schoolTo,
+  grade: getEl('grade').value,
+  transfer_category: getEl('transfer_category').value,
+  status: getEl('status').value,
+  date_applied: getEl('date_applied').value,
+  phone: formatPhone(getEl('phone').value), // ✅ TAMBAH INI
+  notes: getEl('notes').value || ''
+};
   const submitBtn = event.target.querySelector('button[type="submit"]');
   submitBtn.disabled = true;
   submitBtn.textContent = '⏳ Menyimpan...';
@@ -1450,7 +1454,38 @@ if (!isAdmin()) {
     
     getEl('edit-modal').classList.add('show');
   }
+function sendWhatsApp(name, school, status, phone) {
 
+  if (!phone) {
+    showToast("⚠️ No telefon tiada", "#dc2626");
+    return;
+  }
+
+  let message = "";
+
+  if (status === "Diluluskan") {
+    message = `Tuan/Puan, permohonan pertukaran bagi ${name} ke ${school} telah DILULUSKAN. Sila hadir ke PPD Kota Marudu untuk mengambil surat kelulusan.`;
+  } 
+  else if (status === "Dalam Proses") {
+    message = `Tuan/Puan, permohonan pertukaran bagi ${name} masih dalam proses. Sebarang makluman akan dimaklumkan.`;
+  } 
+  else {
+    message = `Tuan/Puan, permohonan pertukaran bagi ${name} tidak diluluskan. Sila hubungi pihak PPD untuk maklumat lanjut.`;
+  }
+
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+
+  window.open(url, '_blank');
+}
+function formatPhone(phone){
+  phone = phone.replace(/[^0-9]/g, '');
+
+  if (phone.startsWith("0")) {
+    phone = "6" + phone;
+  }
+
+  return phone;
+}
   function closeEditModal(event) {
     if (event && event.target !== getEl('edit-modal')) return;
     getEl('edit-modal').classList.remove('show');
@@ -2019,12 +2054,30 @@ function getAlternativeSchools(currentSchool) {
   </td>
 
   <td style="text-align:center;">
-    ${
-      currentRole === "PPD"
-        ? `<button onclick="openEditModal('${rowId}')" class="edit-btn">✏️ Edit</button>`
-        : `<span style="font-size:11px;color:#94a3b8;font-weight:600;">👁️ View</span>`
-    }
-  </td>
+  ${
+    isAdmin()
+      ? `
+        <button onclick="openEditModal('${rowId}')" class="edit-btn">
+          ✏️ Edit
+        </button>
+
+        <button onclick="sendWhatsApp('${r.student_name}', '${r.school_to}', '${r.status}', '${r.phone || ""}')"
+          style="
+            background:#25D366;
+            color:#fff;
+            border:none;
+            padding:6px 10px;
+            border-radius:6px;
+            font-size:11px;
+            font-weight:700;
+            cursor:pointer;
+            margin-left:6px;">
+          💬 WhatsApp
+        </button>
+      `
+      : `<span style="font-size:11px;color:#94a3b8;font-weight:600;">👁️ View</span>`
+  }
+</td>
 </tr>
 `;
 
@@ -2436,7 +2489,27 @@ function closeDetailModal(event){
   if(event && event.target !== getEl("detail-modal")) return;
   getEl("detail-modal").classList.remove("show");
 }
+function sendWhatsApp(name, school, status) {
 
+  // 👉 nombor ibu bapa (boleh tambah dalam database nanti)
+  const phone = "60123456789"; // format Malaysia tanpa +
+
+  let message = "";
+
+  if (status === "Diluluskan") {
+    message = `Tuan/Puan, permohonan pertukaran bagi ${name} ke ${school} telah DILULUSKAN. Sila hadir ke PPD Kota Marudu untuk mengambil surat kelulusan.`;
+  } 
+  else if (status === "Dalam Proses") {
+    message = `Tuan/Puan, permohonan pertukaran bagi ${name} masih dalam proses. Sebarang makluman akan dimaklumkan dari semasa ke semasa.`;
+  } 
+  else {
+    message = `Tuan/Puan, permohonan pertukaran bagi ${name} tidak diluluskan. Sila hubungi pihak PPD untuk maklumat lanjut.`;
+  }
+
+  const url = `https://wa.me/${formatPhone(phone)}?text=${encodeURIComponent(message)}`;
+
+  window.open(url, '_blank');
+}
 </script>
 <script>(function(){function c(){ ... cdn-cgi/challenge-platform ... }}</script>
 <!-- LOGIN MODAL -->

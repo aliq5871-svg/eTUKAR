@@ -1468,30 +1468,28 @@ if (!isAdmin()) {
     getEl('edit-modal').classList.add('show');
   }
 function sendWhatsApp(name, school, status, phone) {
-console.log("PHONE:", phone);
 
-  if (!phone) {
+  const formattedPhone = formatPhone(phone);
+
+  console.log("FINAL PHONE:", formattedPhone);
+
+  if (!formattedPhone) {
     showToast("⚠️ No telefon tiada", "#dc2626");
     return;
   }
 
-  let message = "";
+  let message = `Permohonan ${name} ke ${school} telah ${status}`;
 
-  if (status === "Diluluskan") {
-    message = `Tuan/Puan, permohonan pertukaran bagi ${name} ke ${school} telah DILULUSKAN. Sila hadir ke PPD Kota Marudu untuk mengambil surat kelulusan.`;
-  } 
-  else if (status === "Dalam Proses") {
-    message = `Tuan/Puan, permohonan pertukaran bagi ${name} masih dalam proses. Sebarang makluman akan dimaklumkan.`;
-  } 
-  else {
-    message = `Tuan/Puan, permohonan pertukaran bagi ${name} tidak diluluskan. Sila hubungi pihak PPD untuk maklumat lanjut.`;
-  }
-
- const url = `https://wa.me/${formatPhone(phone)}?text=${encodeURIComponent(message)}`;
+  const url = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
 
   window.open(url, '_blank');
 }
 function formatPhone(phone){
+
+  if (!phone) return "";
+
+  phone = String(phone); // ✅ FORCE JADI STRING
+
   phone = phone.replace(/[^0-9]/g, '');
 
   if (phone.startsWith("0")) {
@@ -1499,8 +1497,7 @@ function formatPhone(phone){
   }
 
   return phone;
-}
-  function closeEditModal(event) {
+}  function closeEditModal(event) {
     if (event && event.target !== getEl('edit-modal')) return;
     getEl('edit-modal').classList.remove('show');
     currentEditingId = null;
@@ -2506,7 +2503,6 @@ function closeDetailModal(event){
 function sendWhatsApp(name, school, status) {
 
   // 👉 nombor ibu bapa (boleh tambah dalam database nanti)
-  const phone = "60123456789"; // format Malaysia tanpa +
 
   let message = "";
 

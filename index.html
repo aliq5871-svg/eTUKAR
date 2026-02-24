@@ -1496,21 +1496,23 @@ function formatPhone(phone){
 
   if (!phone) return "";
 
-  // paksa jadi string & buang semua selain nombor
+  // convert ke string & buang semua bukan nombor
   phone = String(phone).replace(/\D/g, '');
 
-  // buang 0 di depan (contoh 012 → 12)
+  // buang 60 jika duplicate
+  if (phone.startsWith("60")) {
+    phone = phone.substring(2);
+  }
+
+  // buang 0 depan
   if (phone.startsWith("0")) {
     phone = phone.substring(1);
   }
 
-  // pastikan ada kod negara Malaysia
-  if (!phone.startsWith("60")) {
-    phone = "60" + phone;
-  }
+  // tambah 60 semula
+  phone = "60" + phone;
 
   return phone;
-
 }  function closeEditModal(event) {
     if (event && event.target !== getEl('edit-modal')) return;
     getEl('edit-modal').classList.remove('show');
@@ -2535,9 +2537,7 @@ function closeDetailModal(event){
   if(event && event.target !== getEl("detail-modal")) return;
   getEl("detail-modal").classList.remove("show");
 }
-function sendWhatsApp(name, school, status) {
-
-  // 👉 nombor ibu bapa (boleh tambah dalam database nanti)
+function sendWhatsApp(name, school, status, phone) {
 
   let message = "";
 
@@ -2551,7 +2551,13 @@ function sendWhatsApp(name, school, status) {
     message = `Tuan/Puan, permohonan pertukaran bagi ${name} tidak diluluskan. Sila hubungi pihak PPD untuk maklumat lanjut.`;
   }
 
-  const url = `https://wa.me/${formatPhone(phone)}?text=${encodeURIComponent(message)}`;
+  const formattedPhone = formatPhone(phone);
+
+  console.log("FINAL PHONE:", formattedPhone);
+
+  const url = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
+
+  console.log("FINAL URL:", url);
 
   window.open(url, '_blank');
 }
@@ -2567,7 +2573,7 @@ document.addEventListener("click", function(e) {
     const phone = btn.dataset.phone;
 
     console.log("PHONE CLICK:", phone); // debug
-    console.log("FINAL URL:", url);
+
     sendWhatsApp(name, school, status, phone);
   }
 

@@ -1086,7 +1086,7 @@ async function loadFromGoogleSheet() {
   notes: r.notes || "",
   __backendId: String(r.id ?? i)
 }));
-
+console.log("DATA LOAD:", allRecords);
     updateAllCharts();
 
     const live = getEl('live-status');
@@ -1471,14 +1471,22 @@ function sendWhatsApp(name, school, status, phone) {
 
   const formattedPhone = formatPhone(phone);
 
-  console.log("FINAL PHONE:", formattedPhone);
-
   if (!formattedPhone) {
     showToast("⚠️ No telefon tiada", "#dc2626");
     return;
   }
 
-  let message = `Permohonan ${name} ke ${school} telah ${status}`;
+  let message = "";
+
+  if (status === "Diluluskan") {
+    message = `Tuan/Puan, permohonan pertukaran bagi ${name} ke ${school} telah DILULUSKAN. Sila hadir ke PPD Kota Marudu untuk mengambil surat kelulusan.`;
+  } 
+  else if (status === "Dalam Proses") {
+    message = `Permohonan ${name} masih dalam proses.`;
+  } 
+  else {
+    message = `Permohonan ${name} tidak diluluskan.`;
+  }
 
   const url = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
 
@@ -1488,15 +1496,21 @@ function formatPhone(phone){
 
   if (!phone) return "";
 
-  phone = String(phone); // ✅ FORCE JADI STRING
+  // paksa jadi string & buang semua selain nombor
+  phone = String(phone).replace(/\D/g, '');
 
-  phone = phone.replace(/[^0-9]/g, '');
-
+  // buang 0 di depan (contoh 012 → 12)
   if (phone.startsWith("0")) {
-    phone = "6" + phone;
+    phone = phone.substring(1);
+  }
+
+  // pastikan ada kod negara Malaysia
+  if (!phone.startsWith("60")) {
+    phone = "60" + phone;
   }
 
   return phone;
+
 }  function closeEditModal(event) {
     if (event && event.target !== getEl('edit-modal')) return;
     getEl('edit-modal').classList.remove('show');
@@ -2072,19 +2086,24 @@ function getAlternativeSchools(currentSchool) {
           ✏️ Edit
         </button>
 
-        <button onclick="sendWhatsApp('${r.student_name}', '${r.school_to}', '${r.status}', '${r.phone || ""}')"
-          style="
-            background:#25D366;
-            color:#fff;
-            border:none;
-            padding:6px 10px;
-            border-radius:6px;
-            font-size:11px;
-            font-weight:700;
-            cursor:pointer;
-            margin-left:6px;">
-          💬 WhatsApp
-        </button>
+        <button 
+  class="wa-btn"
+  data-name="${r.student_name}"
+  data-school="${r.school_to}"
+  data-status="${r.status}"
+  data-phone="${r.phone || ''}"
+  style="
+    background:#25D366;
+    color:#fff;
+    border:none;
+    padding:6px 10px;
+    border-radius:6px;
+    font-size:11px;
+    font-weight:700;
+    cursor:pointer;
+    margin-left:6px;">
+  💬 WhatsApp
+</button>>
       `
       : `<span style="font-size:11px;color:#94a3b8;font-weight:600;">👁️ View</span>`
   }
@@ -2101,7 +2120,23 @@ function getAlternativeSchools(currentSchool) {
 
   container.innerHTML = html;
 }
+document.addEventListener("click", function(e) {
 
+  if (e.target.classList.contains("wa-btn")) {
+
+    const btn = e.target;
+
+    const name = btn.dataset.name;
+    const school = btn.dataset.school;
+    const status = btn.dataset.status;
+    const phone = btn.dataset.phone;
+
+    console.log("PHONE CLICK:", phone); // debug
+
+    sendWhatsApp(name, school, status, phone);
+  }
+
+});
 
  function updateRanking() {
   const approved = allRecords.filter(r => r.status === 'Diluluskan');
@@ -2520,6 +2555,23 @@ function sendWhatsApp(name, school, status) {
 
   window.open(url, '_blank');
 }
+document.addEventListener("click", function(e) {
+
+  if (e.target.classList.contains("wa-btn")) {
+
+    const btn = e.target;
+
+    const name = btn.dataset.name;
+    const school = btn.dataset.school;
+    const status = btn.dataset.status;
+    const phone = btn.dataset.phone;
+
+    console.log("PHONE CLICK:", phone); // debug
+    console.log("FINAL URL:", url);
+    sendWhatsApp(name, school, status, phone);
+  }
+
+});
 </script>
 <script>(function(){function c(){ ... cdn-cgi/challenge-platform ... }}</script>
 <!-- LOGIN MODAL -->
